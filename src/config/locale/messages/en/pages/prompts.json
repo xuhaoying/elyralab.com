@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "title": "ElyraLab Prompts",
+    "description": "Curated ElyraLab prompts and examples"
+  },
+  "ui": {
+    "create_similar": "Create Similar",
+    "loading": "Loading...",
+    "error_loading": "Error loading",
+    "no_showcases": "No prompts yet",
+    "load_more": "Load More"
+  },
+  "showcases-flow": {
+    "id": "prompts",
+    "sr_only_title": "Prompts",
+    "title": "ElyraLab Prompts",
+    "description": "Representative prompts and examples for ElyraLab",
+    "items": []
+  }
+}

@@ -1,0 +1,375 @@
+{
+  "header": {
+    "id": "header",
+    "brand": {
+      "title": "ElyraLab",
+      "logo": {
+        "src": "/logo.png",
+        "alt": "ElyraLab"
+      },
+      "url": "/"
+    },
+    "nav": {
+      "items": [
+        {
+          "title": "Tools",
+          "url": "/tools",
+          "icon": "Wrench"
+        },
+        {
+          "title": "Gmail Query Generator",
+          "url": "/tools/gmail-search-query-generator",
+          "icon": "MailSearch"
+        }
+      ]
+    },
+    "buttons": [],
+    "user_nav": {
+      "show_name": true,
+      "show_credits": true,
+      "show_sign_out": true,
+      "items": [
+        {
+          "title": "Subscription",
+          "url": "/settings/billing",
+          "icon": "CreditCard"
+        },
+        {
+          "title": "Works",
+          "url": "/activity/ai-tasks",
+          "icon": "Activity"
+        }
+      ]
+    },
+    "show_sign": false,
+    "show_theme": true,
+    "show_locale": true
+  },
+  "hero": {
+    "id": "hero",
+    "title": "ElyraLab",
+    "description": "ElyraLab brings AI image creation, editing, and visual workflow tools into one product.",
+    "buttons": [
+      {
+        "title": "Try it now",
+        "icon": "Zap",
+        "url": "/create",
+        "target": "_self",
+        "variant": "default"
+      },
+      {
+        "title": "View examples",
+        "icon": "BookOpenText",
+        "url": "/#showcases",
+        "target": "_self",
+        "variant": "outline"
+      }
+    ],
+    "show_avatars": false,
+    "avatars_tip": "999+ users are using ElyraLab",
+    "show_award": false,
+    "background_image": {
+      "src": "/imgs/bg/girl.jpeg",
+      "alt": "hero"
+    }
+  },
+  "showcases-flow": {
+    "id": "showcases",
+    "title": "ElyraLab Showcases",
+    "description": "Representative editing and generation cases from ElyraLab",
+    "items": [
+      {
+        "title": "AI SaaS Showcase 1",
+        "description": "AI SaaS Showcase",
+        "image": {
+          "src": "/imgs/showcases/1.jpeg",
+          "alt": "AI SaaS Showcase 1"
+        }
+      },
+      {
+        "title": "AI SaaS Showcase 2",
+        "description": "AI SaaS Showcase",
+        "image": {
+          "src": "/imgs/showcases/2.jpeg",
+          "alt": "AI SaaS Showcase 2"
+        }
+      },
+      {
+        "title": "AI SaaS Showcase 3",
+        "description": "AI SaaS Showcase",
+        "image": {
+          "src": "/imgs/showcases/3.jpeg",
+          "alt": "AI SaaS Showcase 3"
+        }
+      },
+      {
+        "title": "AI SaaS Showcase 4",
+        "description": "AI SaaS Showcase",
+        "image": {
+          "src": "/imgs/showcases/4.jpeg",
+          "alt": "AI SaaS Showcase 4"
+        }
+      },
+      {
+        "title": "AI SaaS Showcase 5",
+        "description": "AI SaaS Showcase",
+        "image": {
+          "src": "/imgs/showcases/5.jpeg",
+          "alt": "AI SaaS Showcase 5"
+        }
+      },
+      {
+        "title": "AI SaaS Showcase 6",
+        "description": "AI SaaS Showcase",
+        "image": {
+          "src": "/imgs/showcases/6.jpeg",
+          "alt": "AI SaaS Showcase 6"
+        }
+      },
+      {
+        "title": "AI SaaS Showcase 7",
+        "description": "AI SaaS Showcase",
+        "image": {
+          "src": "/imgs/showcases/7.jpeg",
+          "alt": "AI SaaS Showcase 7"
+        }
+      },
+      {
+        "title": "AI SaaS Showcase 8",
+        "description": "AI SaaS Showcase",
+        "image": {
+          "src": "/imgs/showcases/8.jpeg",
+          "alt": "AI SaaS Showcase 8"
+        }
+      },
+      {
+        "title": "AI SaaS Showcase 9",
+        "description": "AI SaaS Showcase",
+        "image": {
+          "src": "/imgs/showcases/9.jpeg",
+          "alt": "AI SaaS Showcase 9"
+        }
+      },
+      {
+        "title": "AI SaaS Showcase 10",
+        "description": "AI SaaS Showcase",
+        "image": {
+          "src": "/imgs/showcases/10.jpeg",
+          "alt": "AI SaaS Showcase 10"
+        }
+      }
+    ]
+  },
+  "logos": {
+    "hidden": true
+  },
+  "introduce": {
+    "hidden": true
+  },
+  "benefits": {
+    "hidden": true
+  },
+  "usage": {
+    "hidden": true
+  },
+  "features": {
+    "id": "features",
+    "title": "Key Features of ElyraLab",
+    "description": "Tools for generating and refining visuals with a clear, account-based workflow.",
+    "items": [
+      {
+        "title": "Natural Language Editing",
+        "description": "Edit photos with conversational prompts. ElyraLab interprets complex directions and applies precise transformations.",
+        "icon": "RiMagicLine"
+      },
+      {
+        "title": "Character Consistency",
+        "description": "Preserve faces, outfits, and poses across revisions with an identity-aware editing workflow.",
+        "icon": "RiUserStarLine"
+      },
+      {
+        "title": "Scene Preservation",
+        "description": "Blend edits into original backgrounds for photorealistic results and cleaner scene preservation.",
+        "icon": "RiLandscapeLine"
+      },
+      {
+        "title": "Multi-Image Remix",
+        "description": "Blend elements from multiple reference images to create new scenes, match styles, or preserve continuity across frames.",
+        "icon": "Layers"
+      },
+      {
+        "title": "Aspect Ratio Control",
+        "description": "Choose from presets like 1:1, 16:9, or 4:5 to generate perfectly framed images for social feeds, hero banners, or print layouts.",
+        "icon": "RiAspectRatioLine"
+      },
+      {
+        "title": "Instant Variations",
+        "description": "Request fresh variations in seconds and iterate through lighting, color, and composition ideas without starting over.",
+        "icon": "RiFlashlightLine"
+      }
+    ]
+  },
+  "stats": {
+    "hidden": true
+  },
+  "testimonials": {
+    "hidden": true
+  },
+  "faq": {
+    "id": "faq",
+    "title": "Frequently asked questions about ElyraLab",
+    "items": [
+      {
+        "question": "What exactly is ElyraLab and how does it work?",
+        "answer": "ElyraLab is an AI-powered creative workflow platform. It supports natural language text-to-image generation, text + image editing, multi-image composition, iterative refinements, and high-fidelity text rendering, giving you precise control over every revision."
+      },
+      {
+        "question": "How do I edit existing visuals with ElyraLab?",
+        "answer": "Upload a base image, describe the changes you need, and ElyraLab applies additions, removals, and style shifts without masks. You can keep iterating conversationally until the scene matches your vision, and every output ships with a SynthID watermark for provenance."
+      },
+      {
+        "question": "Which projects benefit most from ElyraLab?",
+        "answer": "Use ElyraLab for portrait retouching, product photography, cinematic storytelling, UGC campaigns, and brand-safe typography. ElyraLab's multimodal understanding blends elements from multiple inputs and keeps backgrounds intact even under heavy edits."
+      },
+      {
+        "question": "Can I control output size and aspect ratio?",
+        "answer": "Yes. Specify aspect ratios such as 1:1, 16:9, or 9:16 to match your channel requirements, and the engine renders the corresponding resolution automatically so you can ship pixel-perfect assets without manual cropping."
+      },
+      {
+        "question": "How do I craft effective prompts for ElyraLab?",
+        "answer": "Start with the subject and setting, add mood or lighting cues, then specify the level of detail or camera style you want. You can reference colors, outfits, materials, or even upload guide images to steer composition and keep characters consistent with ElyraLab."
+      },
+      {
+        "question": "Can l use ElyraLab outputs for commercial projects?",
+        "answer": "Yes. Ensure you have rights to any reference assets, double-check brand guidelines, and remember that every ElyraLab output carries a SynthID watermark to help document provenance when you launch campaigns."
+      }
+    ]
+  },
+  "cta": {
+    "id": "cta",
+    "title": "Try ElyraLab now",
+    "description": "Experience the power of ElyraLab with amazing image editing capabilities.",
+    "buttons": [
+      {
+        "title": "Try ElyraLab",
+        "url": "/create",
+        "target": "_self",
+        "icon": "Wand"
+      }
+    ],
+    "className": "bg-muted"
+  },
+  "subscribe": {
+    "hidden": true
+  },
+  "footer": {
+    "id": "footer",
+    "brand": {
+      "title": "ElyraLab",
+      "description": "ElyraLab is a growing directory of free, browser-based tools for everyday workflows.",
+      "logo": {
+        "src": "/logo.png",
+        "alt": "ElyraLab"
+      },
+      "url": "/"
+    },
+    "nav": {
+      "items": [
+        {
+          "title": "Library",
+          "children": [
+            {
+              "title": "Tool Directory",
+              "url": "/tools",
+              "target": "_self"
+            },
+            {
+              "title": "Gmail Search Query Generator",
+              "url": "/tools/gmail-search-query-generator",
+              "target": "_self"
+            },
+            {
+              "title": "Home",
+              "url": "/",
+              "target": "_self"
+            }
+          ]
+        },
+        {
+          "title": "Planned Tools",
+          "children": [
+            {
+              "title": "True Rent Calculator",
+              "url": "/tools",
+              "target": "_self"
+            },
+            {
+              "title": "Airline Refund Claim Letter Generator",
+              "url": "/tools",
+              "target": "_self"
+            },
+            {
+              "title": "BNPL Payment Calendar",
+              "url": "/tools",
+              "target": "_self"
+            },
+            {
+              "title": "Google Review Reply Generator",
+              "url": "/tools",
+              "target": "_self"
+            },
+            {
+              "title": "AI Search Readiness Checker",
+              "url": "/tools",
+              "target": "_self"
+            }
+          ]
+        },
+        {
+          "title": "Categories",
+          "children": [
+            {
+              "title": "Email & Communication",
+              "url": "/tools",
+              "target": "_self"
+            },
+            {
+              "title": "Finance & Payments",
+              "url": "/tools",
+              "target": "_self"
+            },
+            {
+              "title": "Travel & Consumer Rights",
+              "url": "/tools",
+              "target": "_self"
+            }
+          ]
+        }
+      ]
+    },
+    "social": {
+      "items": [
+        {
+          "title": "Email",
+          "icon": "Mail",
+          "url": "mailto:support@elyralab.com",
+          "target": "_self"
+        }
+      ]
+    },
+    "agreement": {
+      "items": [
+        {
+          "title": "Privacy Policy",
+          "url": "/privacy-policy"
+        },
+        {
+          "title": "Terms of Service",
+          "url": "/terms-of-service"
+        }
+      ]
+    },
+    "show_theme": true,
+    "show_locale": true
+  }
+}

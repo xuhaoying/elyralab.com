@@ -1,0 +1,28 @@
+{
+  "page": {
+    "show_sections": ["hero"],
+    "sections": {
+      "hero": {
+        "id": "hero",
+        "title": "ElyraLab",
+        "highlight_text": "ElyraLab",
+        "description": "AI-powered product workflows for creating, editing, and managing visual work.",
+        "buttons": [
+          {
+            "title": "Get Started",
+            "icon": "Zap",
+            "url": "/create",
+            "target": "_self",
+            "variant": "default"
+          }
+        ],
+        "show_avatars": false,
+        "show_award": false,
+        "background_image": {
+          "src": "/imgs/bg/tree.jpg",
+          "alt": "ElyraLab"
+        }
+      }
+    }
+  }
+}
