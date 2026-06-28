@@ -1,9 +1,10 @@
 'use client';
 
 import { FormEvent, useRef, useState } from 'react';
+import { trackToolEvent } from '@/lib/analytics';
 import { RotateCcw, Search } from 'lucide-react';
 
-import { trackToolEvent } from '@/lib/analytics';
+import { ToolResult } from '@/shared/components/tools';
 import { Button } from '@/shared/components/ui/button';
 import {
   Card,
@@ -15,199 +16,30 @@ import {
 import { Checkbox } from '@/shared/components/ui/checkbox';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
+import { Textarea } from '@/shared/components/ui/textarea';
+
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/components/ui/select';
-import { ToolResult } from '@/shared/components/tools';
+  buildGmailQuery,
+  emptyForm,
+  FormState,
+  GeneratedResult,
+  gmailCategories,
+  LabelMode,
+  resultFileText,
+  validateGmailForm,
+} from './gmail-search-query-generator.logic';
 
-type LabelMode = 'label' | 'category';
-
-interface FormState {
-  from: string;
-  to: string;
-  subjectKeyword: string;
-  containsWords: string;
-  excludesWords: string;
-  hasAttachment: boolean;
-  afterDate: string;
-  beforeDate: string;
-  unreadOnly: boolean;
-  labelMode: LabelMode;
-  labelValue: string;
-}
-
-interface Explanation {
-  part: string;
-  description: string;
-}
-
-interface GeneratedResult {
-  query: string;
-  explanations: Explanation[];
-}
-
-const emptyForm: FormState = {
-  from: '',
-  to: '',
-  subjectKeyword: '',
-  containsWords: '',
-  excludesWords: '',
-  hasAttachment: false,
-  afterDate: '',
-  beforeDate: '',
-  unreadOnly: false,
-  labelMode: 'label',
-  labelValue: '',
-};
-
-function quoteIfNeeded(value: string) {
-  const trimmed = value.trim().replaceAll('"', '\\"');
-
-  if (!trimmed) {
-    return '';
-  }
-
-  return /\s/.test(trimmed) ? `"${trimmed}"` : trimmed;
-}
-
-function splitTerms(value: string) {
-  return value
-    .split(/[,\n]+/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
-function formatGmailDate(value: string) {
-  return value ? value.replaceAll('-', '/') : '';
-}
-
-function buildGmailQuery(form: FormState): GeneratedResult {
-  const parts: Explanation[] = [];
-
-  if (form.from.trim()) {
-    const part = `from:${quoteIfNeeded(form.from)}`;
-    parts.push({
-      part,
-      description: 'Matches messages from this sender.',
-    });
-  }
-
-  if (form.to.trim()) {
-    const part = `to:${quoteIfNeeded(form.to)}`;
-    parts.push({
-      part,
-      description: 'Matches messages sent to this recipient.',
-    });
-  }
-
-  if (form.subjectKeyword.trim()) {
-    const part = `subject:${quoteIfNeeded(form.subjectKeyword)}`;
-    parts.push({
-      part,
-      description: 'Looks for the keyword or phrase in the email subject.',
-    });
-  }
-
-  const containsTerms = splitTerms(form.containsWords);
-  if (containsTerms.length > 0) {
-    const part = containsTerms.map(quoteIfNeeded).join(' ');
-    parts.push({
-      part,
-      description: 'Requires these words or phrases anywhere in the message.',
-    });
-  }
-
-  const excludedTerms = splitTerms(form.excludesWords);
-  if (excludedTerms.length > 0) {
-    const part = excludedTerms
-      .map((term) => `-${quoteIfNeeded(term.replace(/^-+/, ''))}`)
-      .join(' ');
-    parts.push({
-      part,
-      description: 'Excludes messages that contain these words or phrases.',
-    });
-  }
-
-  if (form.hasAttachment) {
-    parts.push({
-      part: 'has:attachment',
-      description: 'Only includes messages with attachments.',
-    });
-  }
-
-  if (form.afterDate) {
-    const part = `after:${formatGmailDate(form.afterDate)}`;
-    parts.push({
-      part,
-      description: 'Only includes messages after this date.',
-    });
-  }
-
-  if (form.beforeDate) {
-    const part = `before:${formatGmailDate(form.beforeDate)}`;
-    parts.push({
-      part,
-      description: 'Only includes messages before this date.',
-    });
-  }
-
-  if (form.unreadOnly) {
-    parts.push({
-      part: 'is:unread',
-      description: 'Only includes unread messages.',
-    });
-  }
-
-  if (form.labelValue.trim()) {
-    const value =
-      form.labelMode === 'category'
-        ? form.labelValue.trim().toLowerCase().replace(/\s+/g, '-')
-        : quoteIfNeeded(form.labelValue);
-    const part = `${form.labelMode}:${value}`;
-    parts.push({
-      part,
-      description:
-        form.labelMode === 'category'
-          ? 'Limits results to this Gmail category.'
-          : 'Limits results to this Gmail label.',
-    });
-  }
-
-  return {
-    query: parts.map((item) => item.part).join(' '),
-    explanations: parts,
-  };
-}
-
-function resultFileText(result: GeneratedResult) {
-  if (!result.query) {
-    return '';
-  }
-
-  const explanation = result.explanations
-    .map((item) => `- ${item.part}: ${item.description}`)
-    .join('\n');
-
-  return `Gmail search query\n\n${result.query}\n\nExplanation\n${explanation}\n`;
-}
-
-export function GmailSearchQueryGenerator({
-  toolSlug,
-}: {
-  toolSlug: string;
-}) {
+export function GmailSearchQueryGenerator({ toolSlug }: { toolSlug: string }) {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [result, setResult] = useState<GeneratedResult>({
     query: '',
     explanations: [],
+    notices: [],
   });
   const [emptyState, setEmptyState] = useState(
     'Add one or more filters, then generate a query.'
   );
+  const [validationMessage, setValidationMessage] = useState('');
   const startedRef = useRef(false);
 
   function updateField<Field extends keyof FormState>(
@@ -218,6 +50,16 @@ export function GmailSearchQueryGenerator({
       ...current,
       [field]: value,
     }));
+    setValidationMessage('');
+  }
+
+  function handleLabelModeChange(value: LabelMode) {
+    setForm((current) => ({
+      ...current,
+      labelMode: value,
+      labelValue: '',
+    }));
+    setValidationMessage('');
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -228,11 +70,22 @@ export function GmailSearchQueryGenerator({
       startedRef.current = true;
     }
 
+    const validationError = validateGmailForm(form);
+
+    if (validationError) {
+      setResult({ query: '', explanations: [], notices: [] });
+      setValidationMessage(validationError);
+      setEmptyState(validationError);
+      return;
+    }
+
     const nextResult = buildGmailQuery(form);
     setResult(nextResult);
 
     if (!nextResult.query) {
-      setEmptyState('Add at least one filter to generate a Gmail search query.');
+      setEmptyState(
+        'Add at least one filter to generate a Gmail search query.'
+      );
       return;
     }
 
@@ -247,8 +100,9 @@ export function GmailSearchQueryGenerator({
 
   function handleReset() {
     setForm(emptyForm);
-    setResult({ query: '', explanations: [] });
+    setResult({ query: '', explanations: [], notices: [] });
     setEmptyState('Add one or more filters, then generate a query.');
+    setValidationMessage('');
   }
 
   return (
@@ -272,7 +126,14 @@ export function GmailSearchQueryGenerator({
                   onChange={(event) => updateField('from', event.target.value)}
                   placeholder="sender@example.com"
                   autoComplete="off"
+                  aria-describedby="gmail-from-hint"
                 />
+                <p
+                  id="gmail-from-hint"
+                  className="text-muted-foreground text-xs leading-5"
+                >
+                  Use one email address, domain, or sender name.
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -284,7 +145,14 @@ export function GmailSearchQueryGenerator({
                   onChange={(event) => updateField('to', event.target.value)}
                   placeholder="recipient@example.com"
                   autoComplete="off"
+                  aria-describedby="gmail-to-hint"
                 />
+                <p
+                  id="gmail-to-hint"
+                  className="text-muted-foreground text-xs leading-5"
+                >
+                  Use one recipient address, domain, or name.
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -303,62 +171,115 @@ export function GmailSearchQueryGenerator({
 
               <div className="space-y-2">
                 <Label htmlFor="gmail-contains">Contains words</Label>
-                <Input
+                <Textarea
                   id="gmail-contains"
-                  type="text"
                   value={form.containsWords}
                   onChange={(event) =>
                     updateField('containsWords', event.target.value)
                   }
-                  placeholder="receipt, quarterly report"
+                  placeholder={'receipt, quarterly report\napproval'}
                   autoComplete="off"
+                  className="min-h-24"
+                  aria-describedby="gmail-contains-hint"
                 />
+                <p
+                  id="gmail-contains-hint"
+                  className="text-muted-foreground text-xs leading-5"
+                >
+                  Separate words or phrases with commas, semicolons, or line
+                  breaks.
+                </p>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="gmail-excludes">Excludes words</Label>
-                <Input
+                <Textarea
                   id="gmail-excludes"
-                  type="text"
                   value={form.excludesWords}
                   onChange={(event) =>
                     updateField('excludesWords', event.target.value)
                   }
-                  placeholder="draft, newsletter"
+                  placeholder={'draft, newsletter\nspam'}
                   autoComplete="off"
+                  className="min-h-24"
+                  aria-describedby="gmail-excludes-hint"
                 />
+                <p
+                  id="gmail-excludes-hint"
+                  className="text-muted-foreground text-xs leading-5"
+                >
+                  A leading minus sign is optional; the generator adds it for
+                  you.
+                </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="gmail-label-value">Label/category</Label>
-                <div className="grid gap-2 sm:grid-cols-[130px_1fr]">
-                  <Select
-                    value={form.labelMode}
-                    onValueChange={(value) =>
-                      updateField('labelMode', value as LabelMode)
-                    }
+                <Label id="gmail-label-filter-label">Label/category</Label>
+                <div className="space-y-3">
+                  <div
+                    className="grid grid-cols-2 gap-2"
+                    role="group"
+                    aria-labelledby="gmail-label-filter-label"
                   >
-                    <SelectTrigger id="gmail-label-mode" className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="label">Label</SelectItem>
-                      <SelectItem value="category">Category</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Input
-                    id="gmail-label-value"
-                    type="text"
-                    value={form.labelValue}
-                    onChange={(event) =>
-                      updateField('labelValue', event.target.value)
-                    }
-                    placeholder={
-                      form.labelMode === 'category' ? 'promotions' : 'work'
-                    }
-                    autoComplete="off"
-                  />
+                    {(['label', 'category'] as const).map((mode) => (
+                      <Button
+                        key={mode}
+                        type="button"
+                        variant={
+                          form.labelMode === mode ? 'default' : 'outline'
+                        }
+                        aria-pressed={form.labelMode === mode}
+                        onClick={() => handleLabelModeChange(mode)}
+                      >
+                        {mode === 'label' ? 'Label' : 'Category'}
+                      </Button>
+                    ))}
+                  </div>
+
+                  {form.labelMode === 'category' ? (
+                    <div
+                      className="grid grid-cols-2 gap-2 sm:grid-cols-3"
+                      role="group"
+                      aria-label="Gmail category"
+                    >
+                      {gmailCategories.map((category) => (
+                        <Button
+                          key={category.value}
+                          type="button"
+                          variant={
+                            form.labelValue === category.value
+                              ? 'default'
+                              : 'outline'
+                          }
+                          aria-pressed={form.labelValue === category.value}
+                          onClick={() =>
+                            updateField('labelValue', category.value)
+                          }
+                        >
+                          {category.label}
+                        </Button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label htmlFor="gmail-label-value">Label name</Label>
+                      <Input
+                        id="gmail-label-value"
+                        type="text"
+                        value={form.labelValue}
+                        onChange={(event) =>
+                          updateField('labelValue', event.target.value)
+                        }
+                        placeholder="work"
+                        autoComplete="off"
+                      />
+                    </div>
+                  )}
                 </div>
+                <p className="text-muted-foreground text-xs leading-5">
+                  Labels can be custom. Categories are limited to Gmail’s
+                  built-in inbox categories.
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -370,6 +291,7 @@ export function GmailSearchQueryGenerator({
                   onChange={(event) =>
                     updateField('afterDate', event.target.value)
                   }
+                  aria-invalid={Boolean(validationMessage)}
                 />
               </div>
 
@@ -382,9 +304,19 @@ export function GmailSearchQueryGenerator({
                   onChange={(event) =>
                     updateField('beforeDate', event.target.value)
                   }
+                  aria-invalid={Boolean(validationMessage)}
                 />
               </div>
             </div>
+
+            {validationMessage ? (
+              <div
+                className="border-destructive/30 bg-destructive/5 text-destructive rounded-md border p-3 text-sm leading-6"
+                role="alert"
+              >
+                {validationMessage}
+              </div>
+            ) : null}
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="flex items-center gap-3 rounded-md border p-3">
@@ -435,6 +367,21 @@ export function GmailSearchQueryGenerator({
       >
         <div className="space-y-3" aria-live="polite">
           <h3 className="text-sm font-semibold">Explanation</h3>
+          {result.notices.length > 0 ? (
+            <div className="space-y-2">
+              {result.notices.map((notice) => (
+                <div
+                  key={notice.title}
+                  className="bg-muted/60 rounded-md border p-3 text-sm"
+                >
+                  <div className="font-medium">{notice.title}</div>
+                  <p className="text-muted-foreground mt-1 leading-6">
+                    {notice.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : null}
           <ul className="space-y-2">
             {result.explanations.map((item) => (
               <li key={item.part} className="rounded-md border p-3 text-sm">
