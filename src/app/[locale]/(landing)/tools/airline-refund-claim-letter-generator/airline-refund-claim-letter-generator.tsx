@@ -1,9 +1,10 @@
 'use client';
 
 import { FormEvent, useRef, useState } from 'react';
+import { trackToolEvent } from '@/lib/analytics';
 import { FileText, RotateCcw } from 'lucide-react';
 
-import { trackToolEvent } from '@/lib/analytics';
+import { ToolResult } from '@/shared/components/tools';
 import { Button } from '@/shared/components/ui/button';
 import {
   Card,
@@ -22,255 +23,33 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 import { Textarea } from '@/shared/components/ui/textarea';
-import { ToolResult } from '@/shared/components/tools';
 
-type IssueType =
-  | 'cancelled'
-  | 'delayed'
-  | 'denied boarding'
-  | 'refund refused'
-  | 'schedule changed';
-type DesiredOutcome = 'refund' | 'compensation' | 'voucher' | 'rebooking';
-type Tone = 'polite' | 'firm' | 'concise';
+import {
+  downloadText,
+  emptyForm,
+  generateClaim,
+  issueLabels,
+  outcomeLabels,
+  toneLabels,
+  validateClaimForm,
+  type DesiredOutcome,
+  type FieldErrors,
+  type FormState,
+  type GeneratedClaim,
+  type IssueType,
+  type Tone,
+} from './airline-refund-claim-letter-generator.logic';
 
-interface FormState {
-  airlineName: string;
-  passengerName: string;
-  flightNumber: string;
-  flightDate: string;
-  route: string;
-  issueType: IssueType;
-  desiredOutcome: DesiredOutcome;
-  tone: Tone;
-  extraDetails: string;
-}
-
-interface GeneratedClaim {
-  subjectLine: string;
-  letter: string;
-  evidenceChecklist: string[];
-}
-
-const emptyForm: FormState = {
-  airlineName: '',
-  passengerName: '',
-  flightNumber: '',
-  flightDate: '',
-  route: '',
-  issueType: 'cancelled',
-  desiredOutcome: 'refund',
-  tone: 'polite',
-  extraDetails: '',
-};
-
-const issueLabels: Record<IssueType, string> = {
-  cancelled: 'Cancelled flight',
-  delayed: 'Delayed flight',
-  'denied boarding': 'Denied boarding',
-  'refund refused': 'Refund refused',
-  'schedule changed': 'Schedule changed',
-};
-
-const outcomeLabels: Record<DesiredOutcome, string> = {
-  refund: 'Refund',
-  compensation: 'Compensation',
-  voucher: 'Voucher',
-  rebooking: 'Rebooking',
-};
-
-const toneLabels: Record<Tone, string> = {
-  polite: 'Polite',
-  firm: 'Firm',
-  concise: 'Concise',
-};
-
-const issueDescriptions: Record<IssueType, string> = {
-  cancelled: 'my flight was cancelled',
-  delayed: 'my flight was delayed',
-  'denied boarding': 'I was denied boarding',
-  'refund refused': 'my refund request was refused',
-  'schedule changed': 'my schedule was materially changed',
-};
-
-const outcomeRequests: Record<DesiredOutcome, string> = {
-  refund: 'a refund to my original payment method',
-  compensation: 'compensation for the disruption',
-  voucher: 'a travel voucher or credit that fairly reflects the disruption',
-  rebooking: 'rebooking on a suitable replacement itinerary at no extra cost',
-};
-
-function formatDate(value: string) {
-  if (!value) {
-    return '';
+function FieldError({ id, message }: { id: string; message?: string }) {
+  if (!message) {
+    return null;
   }
 
-  const [year, month, day] = value.split('-').map(Number);
-  const date = new Date(year, month - 1, day);
-
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(date);
-}
-
-function buildFlightReference(form: FormState) {
-  const details = [
-    form.flightNumber.trim() ? `flight ${form.flightNumber.trim()}` : 'my flight',
-    formatDate(form.flightDate) ? `on ${formatDate(form.flightDate)}` : '',
-    form.route.trim() ? `for ${form.route.trim()}` : '',
-  ].filter(Boolean);
-
-  return details.join(' ');
-}
-
-function buildSubjectLine(form: FormState) {
-  const issue = issueLabels[form.issueType];
-  const outcome = outcomeLabels[form.desiredOutcome].toLowerCase();
-  const flight = form.flightNumber.trim()
-    ? ` - ${form.flightNumber.trim()}`
-    : '';
-  const date = formatDate(form.flightDate);
-
-  return `${issue} ${outcome} request${flight}${date ? ` on ${date}` : ''}`;
-}
-
-function buildEvidenceChecklist(form: FormState) {
-  const checklist = [
-    'Booking confirmation or ticket receipt',
-    'Boarding pass or check-in confirmation, if available',
-    'Any airline notice about the disruption',
-    'Screenshots or emails showing the flight status and timeline',
-    'Receipts for extra costs caused by the disruption',
-  ];
-
-  if (form.issueType === 'refund refused') {
-    checklist.push('Copy of the refund denial or customer service response');
-  }
-
-  if (form.issueType === 'denied boarding') {
-    checklist.push('Gate agent note, denied boarding form, or written explanation');
-  }
-
-  if (form.issueType === 'schedule changed') {
-    checklist.push('Original itinerary and updated itinerary showing the change');
-  }
-
-  if (form.desiredOutcome === 'refund') {
-    checklist.push('Payment receipt showing the original fare and fees');
-  }
-
-  return checklist;
-}
-
-function buildOpening(form: FormState) {
-  const flightReference = buildFlightReference(form);
-  const issueDescription = issueDescriptions[form.issueType];
-  const outcomeRequest = outcomeRequests[form.desiredOutcome];
-
-  if (form.tone === 'concise') {
-    return `I am writing about ${flightReference}. Because ${issueDescription}, I am requesting ${outcomeRequest}.`;
-  }
-
-  if (form.tone === 'firm') {
-    return `I am writing to formally request ${outcomeRequest} for ${flightReference}. ${issueDescription.charAt(0).toUpperCase()}${issueDescription.slice(
-      1
-    )}, and I expect this matter to be reviewed promptly.`;
-  }
-
-  return `I am writing to request your help with ${flightReference}. Because ${issueDescription}, I would like to request ${outcomeRequest}.`;
-}
-
-function buildDetailsParagraph(form: FormState) {
-  const details = form.extraDetails.trim();
-
-  if (!details) {
-    return 'Please review the booking record, disruption details, and the supporting evidence I can provide. If you need additional information, please let me know what documentation is required.';
-  }
-
-  return `Additional details: ${details}`;
-}
-
-function buildClosing(form: FormState) {
-  if (form.tone === 'concise') {
-    return 'Please confirm the next steps and expected resolution timeline.';
-  }
-
-  if (form.tone === 'firm') {
-    return 'Please confirm receipt of this claim and provide a written response with the proposed resolution and timeline. If this cannot be resolved directly, please explain the reason in writing.';
-  }
-
-  return 'Please confirm receipt of this request and let me know the expected timeline for review. Thank you for your assistance.';
-}
-
-function generateClaim(form: FormState): GeneratedClaim {
-  const airline = form.airlineName.trim() || 'the airline';
-  const passengerLine = form.passengerName.trim()
-    ? `Passenger: ${form.passengerName.trim()}`
-    : '';
-  const flightLine = form.flightNumber.trim()
-    ? `Flight number: ${form.flightNumber.trim()}`
-    : '';
-  const dateLine = formatDate(form.flightDate)
-    ? `Flight date: ${formatDate(form.flightDate)}`
-    : '';
-  const routeLine = form.route.trim() ? `Route: ${form.route.trim()}` : '';
-  const referenceLines = [passengerLine, flightLine, dateLine, routeLine].filter(
-    Boolean
+  return (
+    <p id={id} className="text-destructive text-sm">
+      {message}
+    </p>
   );
-  const subjectLine = buildSubjectLine(form);
-  const evidenceChecklist = buildEvidenceChecklist(form);
-  const body =
-    form.tone === 'concise'
-      ? [
-          `Dear ${airline} Customer Relations,`,
-          '',
-          buildOpening(form),
-          buildDetailsParagraph(form),
-          buildClosing(form),
-          '',
-          'Sincerely,',
-          form.passengerName.trim() || '[Your name]',
-        ]
-      : [
-          `Dear ${airline} Customer Relations,`,
-          '',
-          buildOpening(form),
-          '',
-          referenceLines.length > 0 ? referenceLines.join('\n') : '',
-          '',
-          buildDetailsParagraph(form),
-          '',
-          buildClosing(form),
-          '',
-          'Sincerely,',
-          form.passengerName.trim() || '[Your name]',
-        ];
-
-  return {
-    subjectLine,
-    letter: body.filter((line, index, lines) => {
-      if (line !== '') {
-        return true;
-      }
-
-      return lines[index - 1] !== '' && lines[index + 1] !== '';
-    }).join('\n'),
-    evidenceChecklist,
-  };
-}
-
-function downloadText(result: GeneratedClaim) {
-  return [
-    `Subject: ${result.subjectLine}`,
-    '',
-    'Evidence checklist:',
-    ...result.evidenceChecklist.map((item) => `- ${item}`),
-    '',
-    'Claim letter:',
-    '',
-    result.letter,
-  ].join('\n');
 }
 
 export function AirlineRefundClaimLetterGenerator({
@@ -280,6 +59,8 @@ export function AirlineRefundClaimLetterGenerator({
 }) {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [result, setResult] = useState<GeneratedClaim | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [formError, setFormError] = useState('');
   const [emptyState, setEmptyState] = useState(
     'Enter flight details, then generate a claim letter.'
   );
@@ -293,6 +74,12 @@ export function AirlineRefundClaimLetterGenerator({
       ...current,
       [field]: value,
     }));
+    setFieldErrors((current) => {
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+    setFormError('');
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -303,14 +90,22 @@ export function AirlineRefundClaimLetterGenerator({
       startedRef.current = true;
     }
 
-    if (!form.airlineName.trim() || !form.flightDate) {
+    const validation = validateClaimForm(form);
+
+    if (validation.message) {
       setResult(null);
-      setEmptyState('Airline name and flight date are required.');
+      setFieldErrors(validation.fieldErrors);
+      setFormError(validation.message);
+      setEmptyState(
+        'Fix the highlighted fields, then generate a claim letter.'
+      );
       return;
     }
 
     const nextResult = generateClaim(form);
     setResult(nextResult);
+    setFieldErrors({});
+    setFormError('');
 
     trackToolEvent('result_generated', {
       tool_slug: toolSlug,
@@ -320,13 +115,17 @@ export function AirlineRefundClaimLetterGenerator({
       has_passenger_name: Boolean(form.passengerName.trim()),
       has_flight_number: Boolean(form.flightNumber.trim()),
       has_route: Boolean(form.route.trim()),
+      extra_detail_length: form.extraDetails.trim().length,
       evidence_item_count: nextResult.evidenceChecklist.length,
+      letter_character_count: nextResult.letter.length,
     });
   }
 
   function handleReset() {
     setForm(emptyForm);
     setResult(null);
+    setFieldErrors({});
+    setFormError('');
     setEmptyState('Enter flight details, then generate a claim letter.');
   }
 
@@ -341,7 +140,16 @@ export function AirlineRefundClaimLetterGenerator({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleSubmit} noValidate>
+            {formError ? (
+              <div
+                role="alert"
+                className="border-destructive/30 bg-destructive/10 text-destructive rounded-md border px-4 py-3 text-sm"
+              >
+                {formError}
+              </div>
+            ) : null}
+
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="airline-name">Airline name</Label>
@@ -353,12 +161,21 @@ export function AirlineRefundClaimLetterGenerator({
                   }
                   placeholder="Example Airways"
                   autoComplete="organization"
-                  required
+                  aria-invalid={Boolean(fieldErrors.airlineName)}
+                  aria-describedby={
+                    fieldErrors.airlineName ? 'airline-name-error' : undefined
+                  }
+                />
+                <FieldError
+                  id="airline-name-error"
+                  message={fieldErrors.airlineName}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="passenger-name">Passenger name optional</Label>
+                <Label htmlFor="passenger-name">
+                  Passenger name (optional)
+                </Label>
                 <Input
                   id="passenger-name"
                   value={form.passengerName}
@@ -367,11 +184,21 @@ export function AirlineRefundClaimLetterGenerator({
                   }
                   placeholder="Alex Chen"
                   autoComplete="name"
+                  aria-invalid={Boolean(fieldErrors.passengerName)}
+                  aria-describedby={
+                    fieldErrors.passengerName
+                      ? 'passenger-name-error'
+                      : undefined
+                  }
+                />
+                <FieldError
+                  id="passenger-name-error"
+                  message={fieldErrors.passengerName}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="flight-number">Flight number optional</Label>
+                <Label htmlFor="flight-number">Flight number (optional)</Label>
                 <Input
                   id="flight-number"
                   value={form.flightNumber}
@@ -380,6 +207,14 @@ export function AirlineRefundClaimLetterGenerator({
                   }
                   placeholder="EA123"
                   autoComplete="off"
+                  aria-invalid={Boolean(fieldErrors.flightNumber)}
+                  aria-describedby={
+                    fieldErrors.flightNumber ? 'flight-number-error' : undefined
+                  }
+                />
+                <FieldError
+                  id="flight-number-error"
+                  message={fieldErrors.flightNumber}
                 />
               </div>
 
@@ -392,19 +227,31 @@ export function AirlineRefundClaimLetterGenerator({
                   onChange={(event) =>
                     updateField('flightDate', event.target.value)
                   }
-                  required
+                  aria-invalid={Boolean(fieldErrors.flightDate)}
+                  aria-describedby={
+                    fieldErrors.flightDate ? 'flight-date-error' : undefined
+                  }
+                />
+                <FieldError
+                  id="flight-date-error"
+                  message={fieldErrors.flightDate}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="route">Route optional</Label>
+                <Label htmlFor="route">Route (optional)</Label>
                 <Input
                   id="route"
                   value={form.route}
                   onChange={(event) => updateField('route', event.target.value)}
                   placeholder="JFK to LAX"
                   autoComplete="off"
+                  aria-invalid={Boolean(fieldErrors.route)}
+                  aria-describedby={
+                    fieldErrors.route ? 'route-error' : undefined
+                  }
                 />
+                <FieldError id="route-error" message={fieldErrors.route} />
               </div>
 
               <div className="space-y-2">
@@ -479,6 +326,14 @@ export function AirlineRefundClaimLetterGenerator({
                 }
                 placeholder="Add what happened, wait times, customer service responses, expenses, booking reference, or refund denial details."
                 className="min-h-32"
+                aria-invalid={Boolean(fieldErrors.extraDetails)}
+                aria-describedby={
+                  fieldErrors.extraDetails ? 'extra-details-error' : undefined
+                }
+              />
+              <FieldError
+                id="extra-details-error"
+                message={fieldErrors.extraDetails}
               />
             </div>
 
@@ -504,6 +359,7 @@ export function AirlineRefundClaimLetterGenerator({
         emptyState={emptyState}
         filename="airline-refund-claim-letter.txt"
         toolSlug={toolSlug}
+        copyLabel="Copy letter"
       >
         {result ? (
           <div className="space-y-5" aria-live="polite">
