@@ -1,6 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 
-import { ToolDefinition } from '@/lib/tools';
+import { getToolAccessLabel, ToolDefinition } from '@/lib/tools';
 import { Link } from '@/core/i18n/navigation';
 import { Badge } from '@/shared/components/ui/badge';
 import {
@@ -31,8 +31,11 @@ function CardInner({ tool }: { tool: ToolDefinition }) {
           <CardDescription className="leading-6">{tool.description}</CardDescription>
         </div>
       </CardHeader>
-      <CardContent className="mt-auto flex items-center justify-between gap-4">
-        <Badge variant="outline">{tool.category}</Badge>
+      <CardContent className="mt-auto flex flex-wrap items-center justify-between gap-3">
+        <span className="flex flex-wrap gap-2">
+          <Badge variant="outline">{tool.category}</Badge>
+          <Badge variant="secondary">{getToolAccessLabel(tool.access)}</Badge>
+        </span>
         <span className="text-muted-foreground inline-flex items-center gap-1 text-sm">
           {tool.status === 'available' ? 'Open' : 'Coming soon'}
           {tool.status === 'available' ? <ArrowRight className="size-4" /> : null}

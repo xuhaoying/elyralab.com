@@ -1,6 +1,10 @@
 import { ReactNode } from 'react';
 
-import { getRelatedTools, ToolDefinition } from '@/lib/tools';
+import {
+  getRelatedTools,
+  getToolAccessLabel,
+  ToolDefinition,
+} from '@/lib/tools';
 
 import { RelatedTools } from './related-tools';
 import { ToolFAQ } from './tool-faq';
@@ -18,7 +22,7 @@ export function ToolLayout({
   return (
     <main>
       <ToolHero
-        eyebrow="Free tool"
+        eyebrow={`${getToolAccessLabel(tool.access)} tool`}
         title={tool.name}
         description={tool.description}
         tool={tool}

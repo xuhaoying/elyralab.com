@@ -1,4 +1,5 @@
 export type ToolStatus = 'available' | 'planned';
+export type ToolAccess = 'free' | 'freemium' | 'paid';
 
 export type ToolCategory =
   | 'Email & Communication'
@@ -19,6 +20,7 @@ export interface ToolDefinition {
   description: string;
   category: ToolCategory;
   status: ToolStatus;
+  access: ToolAccess;
   href: string;
   icon: string;
   keywords: string[];
@@ -42,6 +44,7 @@ export const tools: ToolDefinition[] = [
       'Build precise Gmail search operators from simple filters, then copy or download the query.',
     category: 'Email & Communication',
     status: 'available',
+    access: 'free',
     href: '/tools/gmail-search-query-generator',
     icon: 'MailSearch',
     keywords: [
@@ -81,6 +84,7 @@ export const tools: ToolDefinition[] = [
       'Estimate the real monthly cost of rent after utilities, recurring fees, deposits, and move-in costs.',
     category: 'Finance & Payments',
     status: 'available',
+    access: 'free',
     href: '/tools/true-rent-calculator',
     icon: 'Calculator',
     keywords: [
@@ -121,6 +125,7 @@ export const tools: ToolDefinition[] = [
       'Draft a clear airline refund or compensation claim letter from flight and disruption details.',
     category: 'Travel & Consumer Rights',
     status: 'available',
+    access: 'free',
     href: '/tools/airline-refund-claim-letter-generator',
     icon: 'Plane',
     keywords: [
@@ -161,6 +166,7 @@ export const tools: ToolDefinition[] = [
       'Turn buy-now-pay-later plans into a readable payment schedule and reminder checklist.',
     category: 'Finance & Payments',
     status: 'available',
+    access: 'free',
     href: '/tools/bnpl-payment-calendar',
     icon: 'CalendarDays',
     keywords: [
@@ -200,6 +206,7 @@ export const tools: ToolDefinition[] = [
       'Create thoughtful, on-brand replies for positive, neutral, and negative Google reviews.',
     category: 'Reputation & Marketing',
     status: 'available',
+    access: 'free',
     href: '/tools/google-review-reply-generator',
     icon: 'MessageSquareReply',
     keywords: [
@@ -240,6 +247,7 @@ export const tools: ToolDefinition[] = [
       'Check whether a page is structured for AI search answers, citations, and entity clarity.',
     category: 'AI & SEO',
     status: 'available',
+    access: 'free',
     href: '/tools/ai-search-readiness-checker',
     icon: 'SearchCheck',
     keywords: [
@@ -288,6 +296,16 @@ export function getToolBySlug(slug: string) {
 
 export function getToolsByCategory(category: ToolCategory) {
   return tools.filter((tool) => tool.category === category);
+}
+
+export function getToolAccessLabel(access: ToolAccess) {
+  const labels: Record<ToolAccess, string> = {
+    free: 'Free',
+    freemium: 'Freemium',
+    paid: 'Paid',
+  };
+
+  return labels[access];
 }
 
 export function getRelatedTools(slug: string, limit = 5) {

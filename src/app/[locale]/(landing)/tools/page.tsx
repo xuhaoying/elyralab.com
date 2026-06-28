@@ -13,11 +13,11 @@ function getCategoryId(category: string) {
 }
 
 export const generateMetadata = getMetadata({
-  title: 'Free Tool Directory | ElyraLab',
+  title: 'Tool Directory | ElyraLab',
   description:
     'Browse the ElyraLab tool directory by category, including Gmail search, rent, travel refund, payment calendar, review reply, and AI search tools.',
   keywords:
-    'tool directory, free browser tools, Gmail search query generator, rent calculator, AI search checker',
+    'tool directory, browser tools, Gmail search query generator, rent calculator, AI search checker',
   canonicalUrl: '/tools',
 });
 

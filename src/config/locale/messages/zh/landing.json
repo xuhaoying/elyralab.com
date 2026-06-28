@@ -15,36 +15,6 @@
           "title": "工具",
           "url": "/tools",
           "icon": "Wrench"
-        },
-        {
-          "title": "Gmail 查询生成器",
-          "url": "/tools/gmail-search-query-generator",
-          "icon": "MailSearch"
-        },
-        {
-          "title": "真实租金计算器",
-          "url": "/tools/true-rent-calculator",
-          "icon": "Calculator"
-        },
-        {
-          "title": "航空退款信生成器",
-          "url": "/tools/airline-refund-claim-letter-generator",
-          "icon": "Plane"
-        },
-        {
-          "title": "BNPL 付款日历",
-          "url": "/tools/bnpl-payment-calendar",
-          "icon": "CalendarDays"
-        },
-        {
-          "title": "评论回复生成器",
-          "url": "/tools/google-review-reply-generator",
-          "icon": "MessageSquareReply"
-        },
-        {
-          "title": "AI 搜索检查器",
-          "url": "/tools/ai-search-readiness-checker",
-          "icon": "SearchCheck"
         }
       ]
     },
@@ -291,7 +261,7 @@
     "id": "footer",
     "brand": {
       "title": "ElyraLab",
-      "description": "ElyraLab 是一个不断扩展的免费浏览器工具目录，服务日常工作流。",
+      "description": "ElyraLab 是一个不断扩展的浏览器工具目录，服务日常工作流。",
       "logo": {
         "src": "/logo.png",
         "alt": "ElyraLab"

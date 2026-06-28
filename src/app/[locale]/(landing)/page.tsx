@@ -9,11 +9,11 @@ import { Card, CardContent } from '@/shared/components/ui/card';
 import { getMetadata } from '@/shared/lib/seo';
 
 export const generateMetadata = getMetadata({
-  title: 'ElyraLab Tool Library | Free Everyday Workflow Tools',
+  title: 'ElyraLab Tool Library | Everyday Workflow Tools',
   description:
-    'A growing directory of free, browser-based tools for email, finance, travel, reputation, and AI search workflows.',
+    'A growing directory of browser-based tools for email, finance, travel, reputation, and AI search workflows.',
   keywords:
-    'free tools, tool directory, Gmail search query generator, productivity tools',
+    'online tools, tool directory, Gmail search query generator, productivity tools',
   canonicalUrl: '/',
 });
 
@@ -33,13 +33,15 @@ export default async function LandingPage({
       <ToolHero
         eyebrow="Tool library"
         title="Useful tools for everyday workflows"
-        description="ElyraLab is becoming a focused directory of lightweight tools that run in your browser, require no login, and solve specific workflow problems."
+        description="ElyraLab is becoming a focused directory of lightweight tools that run in your browser and solve specific workflow problems."
       >
         <Card className="rounded-lg">
           <CardContent className="grid grid-cols-2 gap-4 p-5">
             <div>
               <div className="text-3xl font-semibold">{allTools.length}</div>
-              <div className="text-muted-foreground text-sm">Tools planned</div>
+              <div className="text-muted-foreground text-sm">
+                Tools in library
+              </div>
             </div>
             <div>
               <div className="text-3xl font-semibold">

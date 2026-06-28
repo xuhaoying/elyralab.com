@@ -15,36 +15,6 @@
           "title": "Tools",
           "url": "/tools",
           "icon": "Wrench"
-        },
-        {
-          "title": "Gmail Query Generator",
-          "url": "/tools/gmail-search-query-generator",
-          "icon": "MailSearch"
-        },
-        {
-          "title": "True Rent Calculator",
-          "url": "/tools/true-rent-calculator",
-          "icon": "Calculator"
-        },
-        {
-          "title": "Refund Letter Generator",
-          "url": "/tools/airline-refund-claim-letter-generator",
-          "icon": "Plane"
-        },
-        {
-          "title": "BNPL Calendar",
-          "url": "/tools/bnpl-payment-calendar",
-          "icon": "CalendarDays"
-        },
-        {
-          "title": "Review Reply Generator",
-          "url": "/tools/google-review-reply-generator",
-          "icon": "MessageSquareReply"
-        },
-        {
-          "title": "AI Search Checker",
-          "url": "/tools/ai-search-readiness-checker",
-          "icon": "SearchCheck"
         }
       ]
     },
@@ -291,7 +261,7 @@
     "id": "footer",
     "brand": {
       "title": "ElyraLab",
-      "description": "ElyraLab is a growing directory of free, browser-based tools for everyday workflows.",
+      "description": "ElyraLab is a growing directory of browser-based tools for everyday workflows.",
       "logo": {
         "src": "/logo.png",
         "alt": "ElyraLab"

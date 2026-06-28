@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 
-import { ToolDefinition } from '@/lib/tools';
+import { getToolAccessLabel, ToolDefinition } from '@/lib/tools';
 import { Badge } from '@/shared/components/ui/badge';
 import { cn } from '@/shared/lib/utils';
 
@@ -17,7 +17,7 @@ export function ToolHero({
   eyebrow?: string;
   title: string;
   description: string;
-  tool?: Pick<ToolDefinition, 'category' | 'status' | 'icon'>;
+  tool?: Pick<ToolDefinition, 'category' | 'status' | 'access' | 'icon'>;
   children?: ReactNode;
   className?: string;
 }) {
@@ -34,6 +34,9 @@ export function ToolHero({
             {eyebrow ? <Badge variant="outline">{eyebrow}</Badge> : null}
             {tool?.category ? (
               <Badge variant="secondary">{tool.category}</Badge>
+            ) : null}
+            {tool?.access ? (
+              <Badge variant="outline">{getToolAccessLabel(tool.access)}</Badge>
             ) : null}
             {tool?.status === 'planned' ? (
               <Badge variant="outline">Planned</Badge>
