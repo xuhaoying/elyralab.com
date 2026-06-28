@@ -24,263 +24,28 @@ import {
 } from '@/shared/components/ui/select';
 import { Textarea } from '@/shared/components/ui/textarea';
 
-type BinaryAnswer = 'yes' | 'no';
-type TernaryAnswer = 'yes' | 'no' | 'unknown';
-type AssessmentKey =
-  | 'hasAboutPage'
-  | 'hasFaqPage'
-  | 'hasProductPages'
-  | 'hasAuthorInfo'
-  | 'hasStructuredData'
-  | 'hasLlmsTxt'
-  | 'hasPricingPages'
-  | 'hasOriginalResearch';
+import {
+  buildResult,
+  emptyForm,
+  resultText,
+  validateReadinessForm,
+  type BinaryAnswer,
+  type FieldErrors,
+  type FormState,
+  type ReadinessResult,
+  type TernaryAnswer,
+} from './ai-search-readiness-checker.logic';
 
-interface FormState {
-  websiteUrl: string;
-  brandName: string;
-  targetAudience: string;
-  hasAboutPage: BinaryAnswer;
-  hasFaqPage: BinaryAnswer;
-  hasProductPages: BinaryAnswer;
-  hasAuthorInfo: BinaryAnswer;
-  hasStructuredData: TernaryAnswer;
-  hasLlmsTxt: TernaryAnswer;
-  hasPricingPages: BinaryAnswer;
-  hasOriginalResearch: BinaryAnswer;
-}
-
-interface AssessmentItem {
-  key: AssessmentKey;
-  label: string;
-  description: string;
-  recommendation: string;
-  weight: number;
-  answer: TernaryAnswer;
-}
-
-interface ReadinessResult {
-  score: number;
-  level: string;
-  strengths: string[];
-  missingItems: string[];
-  priorityChecklist: string[];
-  recommendations: string[];
-  summary: string;
-  items: AssessmentItem[];
-}
-
-const emptyForm: FormState = {
-  websiteUrl: '',
-  brandName: '',
-  targetAudience: '',
-  hasAboutPage: 'no',
-  hasFaqPage: 'no',
-  hasProductPages: 'no',
-  hasAuthorInfo: 'no',
-  hasStructuredData: 'unknown',
-  hasLlmsTxt: 'unknown',
-  hasPricingPages: 'no',
-  hasOriginalResearch: 'no',
-};
-
-const assessmentConfig: Array<
-  Omit<AssessmentItem, 'answer'> & { key: AssessmentKey }
-> = [
-  {
-    key: 'hasProductPages',
-    label: 'Clear product or service pages',
-    description:
-      'AI systems need crawlable pages that explain what you offer, who it is for, and why it is different.',
-    recommendation:
-      'Create or improve product/service pages with clear use cases, benefits, proof points, and plain-language descriptions.',
-    weight: 18,
-  },
-  {
-    key: 'hasStructuredData',
-    label: 'Structured data/schema',
-    description:
-      'Schema helps search systems understand entities, products, organizations, articles, FAQs, and reviews.',
-    recommendation:
-      'Add appropriate JSON-LD schema such as Organization, Product, Service, FAQPage, Article, BreadcrumbList, or Review where relevant.',
-    weight: 16,
-  },
-  {
-    key: 'hasOriginalResearch',
-    label: 'Original research or unique data',
-    description:
-      'Unique data, benchmarks, examples, or research give AI search systems something distinctive to cite.',
-    recommendation:
-      'Publish original data, benchmarks, teardown examples, customer insights, or proprietary methodology pages.',
-    weight: 14,
-  },
-  {
-    key: 'hasAuthorInfo',
-    label: 'Author or company information',
-    description:
-      'Clear ownership and expertise signals help establish who is responsible for the content.',
-    recommendation:
-      'Add author bios, editorial ownership, company details, contact information, and credentials where relevant.',
-    weight: 12,
-  },
-  {
-    key: 'hasFaqPage',
-    label: 'FAQ page',
-    description:
-      'Question-and-answer content maps well to AI answer formats and long-tail search intent.',
-    recommendation:
-      'Build FAQ content around real buyer questions, objections, pricing concerns, alternatives, and implementation details.',
-    weight: 12,
-  },
-  {
-    key: 'hasAboutPage',
-    label: 'About page',
-    description:
-      'A strong About page clarifies the brand entity, mission, audience, location, and trust signals.',
-    recommendation:
-      'Create an About page that explains who you are, who you serve, what you do, and why the brand is credible.',
-    weight: 10,
-  },
-  {
-    key: 'hasPricingPages',
-    label: 'Pricing or comparison pages',
-    description:
-      'Commercial-intent pages help AI systems answer buying and comparison questions accurately.',
-    recommendation:
-      'Add pricing, plans, alternatives, competitor comparison, or buying-guide pages when appropriate.',
-    weight: 10,
-  },
-  {
-    key: 'hasLlmsTxt',
-    label: 'llms.txt',
-    description:
-      'An llms.txt file can point AI systems to important documentation, policies, and canonical content.',
-    recommendation:
-      'Consider adding llms.txt with concise links to important product, docs, policy, and knowledge-base pages.',
-    weight: 8,
-  },
-];
-
-function answerScore(answer: TernaryAnswer, weight: number) {
-  if (answer === 'yes') {
-    return weight;
+function FieldError({ id, message }: { id: string; message?: string }) {
+  if (!message) {
+    return null;
   }
 
-  if (answer === 'unknown') {
-    return Math.round(weight * 0.25);
-  }
-
-  return 0;
-}
-
-function getReadinessLevel(score: number) {
-  if (score >= 80) {
-    return 'Strong';
-  }
-
-  if (score >= 60) {
-    return 'Developing';
-  }
-
-  if (score >= 40) {
-    return 'Early';
-  }
-
-  return 'Needs foundation work';
-}
-
-function buildItems(form: FormState) {
-  return assessmentConfig.map((item) => ({
-    ...item,
-    answer: form[item.key],
-  }));
-}
-
-function buildResult(form: FormState): ReadinessResult {
-  const items = buildItems(form);
-  const score = items.reduce(
-    (total, item) => total + answerScore(item.answer, item.weight),
-    0
+  return (
+    <p id={id} className="text-destructive text-sm">
+      {message}
+    </p>
   );
-  const strengths = items
-    .filter((item) => item.answer === 'yes')
-    .map((item) => item.label);
-  const missingItems = items
-    .filter((item) => item.answer !== 'yes')
-    .map((item) =>
-      item.answer === 'unknown'
-        ? `${item.label} needs verification`
-        : item.label
-    );
-  const priorityChecklist = items
-    .filter((item) => item.answer !== 'yes')
-    .sort((a, b) => b.weight - a.weight)
-    .map((item) =>
-      item.answer === 'unknown'
-        ? `Verify ${item.label.toLowerCase()}`
-        : `Add ${item.label.toLowerCase()}`
-    );
-  const recommendations = items
-    .filter((item) => item.answer !== 'yes')
-    .sort((a, b) => b.weight - a.weight)
-    .slice(0, 5)
-    .map((item) => item.recommendation);
-  const level = getReadinessLevel(score);
-  const brand = form.brandName.trim() || 'This brand';
-  const audience = form.targetAudience.trim() || 'the target audience';
-  const summary = `${brand} scores ${score}/100 for AI search readiness. The current level is ${level.toLowerCase()}. The strongest path forward is to make the site easier for AI systems to understand, cite, and connect to ${audience}.`;
-
-  return {
-    score,
-    level,
-    strengths,
-    missingItems,
-    priorityChecklist,
-    recommendations,
-    summary,
-    items,
-  };
-}
-
-function resultText(form: FormState, result: ReadinessResult) {
-  const lines = [
-    'AI search readiness score',
-    '',
-    `Website URL: ${form.websiteUrl.trim()}`,
-    `Brand name: ${form.brandName.trim()}`,
-    `Target audience: ${form.targetAudience.trim()}`,
-    `AI search readiness score: ${result.score}/100`,
-    `Readiness level: ${result.level}`,
-    '',
-    'Summary:',
-    result.summary,
-    '',
-    'Strengths:',
-    ...(result.strengths.length > 0
-      ? result.strengths.map((item) => `- ${item}`)
-      : ['- No strengths selected yet.']),
-    '',
-    'Missing items:',
-    ...(result.missingItems.length > 0
-      ? result.missingItems.map((item) => `- ${item}`)
-      : ['- No major missing items selected.']),
-    '',
-    'Priority checklist:',
-    ...(result.priorityChecklist.length > 0
-      ? result.priorityChecklist.map((item) => `[ ] ${item}`)
-      : [
-          '[ ] Maintain current AI-search foundations and refresh content regularly.',
-        ]),
-    '',
-    'Next-step recommendations:',
-    ...(result.recommendations.length > 0
-      ? result.recommendations.map((item) => `- ${item}`)
-      : [
-          '- Keep high-value pages current, add new proof points, and monitor how AI search systems describe the brand.',
-        ]),
-  ];
-
-  return lines.join('\n');
 }
 
 function OptionSelect({
@@ -289,13 +54,17 @@ function OptionSelect({
   value,
   onChange,
   includeUnknown = false,
+  error,
 }: {
   id: string;
   label: string;
   value: TernaryAnswer;
   onChange: (value: TernaryAnswer) => void;
   includeUnknown?: boolean;
+  error?: string;
 }) {
+  const errorId = `${id}-error`;
+
   return (
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
@@ -303,7 +72,12 @@ function OptionSelect({
         value={value}
         onValueChange={(next) => onChange(next as TernaryAnswer)}
       >
-        <SelectTrigger id={id} className="w-full">
+        <SelectTrigger
+          id={id}
+          className="w-full"
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? errorId : undefined}
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -314,6 +88,7 @@ function OptionSelect({
           ) : null}
         </SelectContent>
       </Select>
+      <FieldError id={errorId} message={error} />
     </div>
   );
 }
@@ -321,6 +96,8 @@ function OptionSelect({
 export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [result, setResult] = useState<ReadinessResult | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [formError, setFormError] = useState('');
   const [emptyState, setEmptyState] = useState(
     'Complete the self-assessment, then generate your readiness report.'
   );
@@ -334,6 +111,12 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
       ...current,
       [field]: value,
     }));
+    setFieldErrors((current) => {
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+    setFormError('');
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -344,20 +127,20 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
       startedRef.current = true;
     }
 
-    if (
-      !form.websiteUrl.trim() ||
-      !form.brandName.trim() ||
-      !form.targetAudience.trim()
-    ) {
+    const validation = validateReadinessForm(form);
+
+    if (validation.message) {
       setResult(null);
-      setEmptyState(
-        'Website URL, brand name, and target audience are required.'
-      );
+      setFieldErrors(validation.fieldErrors);
+      setFormError(validation.message);
+      setEmptyState('Fix the highlighted fields, then generate your report.');
       return;
     }
 
     const nextResult = buildResult(form);
     setResult(nextResult);
+    setFieldErrors({});
+    setFormError('');
 
     trackToolEvent('result_generated', {
       tool_slug: toolSlug,
@@ -373,6 +156,8 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
   function handleReset() {
     setForm(emptyForm);
     setResult(null);
+    setFieldErrors({});
+    setFormError('');
     setEmptyState(
       'Complete the self-assessment, then generate your readiness report.'
     );
@@ -391,20 +176,37 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleSubmit} noValidate>
+            {formError ? (
+              <div
+                role="alert"
+                className="border-destructive/30 bg-destructive/10 text-destructive rounded-md border px-4 py-3 text-sm"
+              >
+                {formError}
+              </div>
+            ) : null}
+
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="website-url">Website URL</Label>
                 <Input
                   id="website-url"
-                  type="url"
+                  type="text"
+                  inputMode="url"
                   value={form.websiteUrl}
                   onChange={(event) =>
                     updateField('websiteUrl', event.target.value)
                   }
                   placeholder="https://example.com"
                   autoComplete="url"
-                  required
+                  aria-invalid={Boolean(fieldErrors.websiteUrl)}
+                  aria-describedby={
+                    fieldErrors.websiteUrl ? 'website-url-error' : undefined
+                  }
+                />
+                <FieldError
+                  id="website-url-error"
+                  message={fieldErrors.websiteUrl}
                 />
               </div>
 
@@ -418,7 +220,14 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
                   }
                   placeholder="Acme"
                   autoComplete="organization"
-                  required
+                  aria-invalid={Boolean(fieldErrors.brandName)}
+                  aria-describedby={
+                    fieldErrors.brandName ? 'brand-name-error' : undefined
+                  }
+                />
+                <FieldError
+                  id="brand-name-error"
+                  message={fieldErrors.brandName}
                 />
               </div>
 
@@ -432,7 +241,16 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
                   }
                   placeholder="Example: operations leaders at mid-market SaaS companies"
                   className="min-h-24"
-                  required
+                  aria-invalid={Boolean(fieldErrors.targetAudience)}
+                  aria-describedby={
+                    fieldErrors.targetAudience
+                      ? 'target-audience-error'
+                      : undefined
+                  }
+                />
+                <FieldError
+                  id="target-audience-error"
+                  message={fieldErrors.targetAudience}
                 />
               </div>
             </div>
@@ -445,6 +263,7 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
                 onChange={(value) =>
                   updateField('hasAboutPage', value as BinaryAnswer)
                 }
+                error={fieldErrors.hasAboutPage}
               />
               <OptionSelect
                 id="has-faq-page"
@@ -453,6 +272,7 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
                 onChange={(value) =>
                   updateField('hasFaqPage', value as BinaryAnswer)
                 }
+                error={fieldErrors.hasFaqPage}
               />
               <OptionSelect
                 id="has-product-pages"
@@ -461,6 +281,7 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
                 onChange={(value) =>
                   updateField('hasProductPages', value as BinaryAnswer)
                 }
+                error={fieldErrors.hasProductPages}
               />
               <OptionSelect
                 id="has-author-info"
@@ -469,6 +290,7 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
                 onChange={(value) =>
                   updateField('hasAuthorInfo', value as BinaryAnswer)
                 }
+                error={fieldErrors.hasAuthorInfo}
               />
               <OptionSelect
                 id="has-structured-data"
@@ -476,6 +298,7 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
                 value={form.hasStructuredData}
                 onChange={(value) => updateField('hasStructuredData', value)}
                 includeUnknown
+                error={fieldErrors.hasStructuredData}
               />
               <OptionSelect
                 id="has-llms-txt"
@@ -483,6 +306,7 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
                 value={form.hasLlmsTxt}
                 onChange={(value) => updateField('hasLlmsTxt', value)}
                 includeUnknown
+                error={fieldErrors.hasLlmsTxt}
               />
               <OptionSelect
                 id="has-pricing-pages"
@@ -491,6 +315,7 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
                 onChange={(value) =>
                   updateField('hasPricingPages', value as BinaryAnswer)
                 }
+                error={fieldErrors.hasPricingPages}
               />
               <OptionSelect
                 id="has-original-research"
@@ -499,6 +324,7 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
                 onChange={(value) =>
                   updateField('hasOriginalResearch', value as BinaryAnswer)
                 }
+                error={fieldErrors.hasOriginalResearch}
               />
             </div>
 
