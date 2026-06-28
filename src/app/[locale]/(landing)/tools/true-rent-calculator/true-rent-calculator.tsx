@@ -16,299 +16,39 @@ import {
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 
-interface FormState {
-  baseMonthlyRent: string;
-  utilities: string;
-  internet: string;
-  parking: string;
-  petRent: string;
-  trashFee: string;
-  adminFee: string;
-  otherMonthlyFees: string;
-  applicationFee: string;
-  moveInFee: string;
-  securityDeposit: string;
-  leaseLengthMonths: string;
-}
-
-interface BreakdownRow {
-  label: string;
-  cadence: 'Monthly' | 'One-time';
-  amount: number;
-  firstMonthImpact: number;
-  leaseImpact: number;
-}
-
-interface RentResult {
-  leaseLengthMonths: number;
-  monthlyRecurringTotal: number;
-  oneTimeTotal: number;
-  trueMonthlyRent: number;
-  firstMonthTotalCost: number;
-  totalLeaseCost: number;
-  annualizedHousingCost: number;
-  summary: string;
-  rows: BreakdownRow[];
-}
-
-const emptyForm: FormState = {
-  baseMonthlyRent: '',
-  utilities: '',
-  internet: '',
-  parking: '',
-  petRent: '',
-  trashFee: '',
-  adminFee: '',
-  otherMonthlyFees: '',
-  applicationFee: '',
-  moveInFee: '',
-  securityDeposit: '',
-  leaseLengthMonths: '12',
-};
-
-const monthlyFields: Array<{
-  key: keyof FormState;
-  label: string;
-  placeholder: string;
-}> = [
-  {
-    key: 'baseMonthlyRent',
-    label: 'Base monthly rent',
-    placeholder: '2200',
-  },
-  {
-    key: 'utilities',
-    label: 'Utilities',
-    placeholder: '150',
-  },
-  {
-    key: 'internet',
-    label: 'Internet',
-    placeholder: '60',
-  },
-  {
-    key: 'parking',
-    label: 'Parking',
-    placeholder: '125',
-  },
-  {
-    key: 'petRent',
-    label: 'Pet rent',
-    placeholder: '50',
-  },
-  {
-    key: 'trashFee',
-    label: 'Trash fee',
-    placeholder: '25',
-  },
-  {
-    key: 'adminFee',
-    label: 'Admin fee',
-    placeholder: '15',
-  },
-  {
-    key: 'otherMonthlyFees',
-    label: 'Other monthly fees',
-    placeholder: '40',
-  },
-];
-
-const oneTimeFields: Array<{
-  key: keyof FormState;
-  label: string;
-  placeholder: string;
-}> = [
-  {
-    key: 'applicationFee',
-    label: 'Application fee',
-    placeholder: '75',
-  },
-  {
-    key: 'moveInFee',
-    label: 'Move-in fee',
-    placeholder: '350',
-  },
-  {
-    key: 'securityDeposit',
-    label: 'Security deposit',
-    placeholder: '2200',
-  },
-];
-
-function parseCurrency(value: string) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
-}
-
-function parseLeaseLength(value: string) {
-  const parsed = Math.floor(Number(value));
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 12;
-}
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
-function buildRow(
-  label: string,
-  cadence: BreakdownRow['cadence'],
-  amount: number,
-  leaseLengthMonths: number
-): BreakdownRow {
-  const isMonthly = cadence === 'Monthly';
-
-  return {
-    label,
-    cadence,
-    amount,
-    firstMonthImpact: amount,
-    leaseImpact: isMonthly ? amount * leaseLengthMonths : amount,
-  };
-}
-
-function buildRentResult(form: FormState): RentResult {
-  const leaseLengthMonths = parseLeaseLength(form.leaseLengthMonths);
-  const monthlyRows = monthlyFields.map((field) =>
-    buildRow(
-      field.label,
-      'Monthly',
-      parseCurrency(form[field.key]),
-      leaseLengthMonths
-    )
-  );
-  const oneTimeRows = oneTimeFields.map((field) =>
-    buildRow(
-      field.label,
-      'One-time',
-      parseCurrency(form[field.key]),
-      leaseLengthMonths
-    )
-  );
-  const rows = [...monthlyRows, ...oneTimeRows];
-  const monthlyRecurringTotal = monthlyRows.reduce(
-    (total, row) => total + row.amount,
-    0
-  );
-  const oneTimeTotal = oneTimeRows.reduce(
-    (total, row) => total + row.amount,
-    0
-  );
-  const totalLeaseCost =
-    monthlyRecurringTotal * leaseLengthMonths + oneTimeTotal;
-  const trueMonthlyRent = totalLeaseCost / leaseLengthMonths;
-  const firstMonthTotalCost = monthlyRecurringTotal + oneTimeTotal;
-  const annualizedHousingCost = trueMonthlyRent * 12;
-  const amortizedOneTime = oneTimeTotal / leaseLengthMonths;
-
-  const summary = `Your true monthly rent is ${formatCurrency(
-    trueMonthlyRent
-  )}. That combines ${formatCurrency(
-    monthlyRecurringTotal
-  )} in recurring monthly rent and fees with ${formatCurrency(
-    amortizedOneTime
-  )} in upfront costs spread across a ${leaseLengthMonths}-month lease. Your first-month cash need is ${formatCurrency(
-    firstMonthTotalCost
-  )}, total lease cost is ${formatCurrency(
-    totalLeaseCost
-  )}, and the annualized housing cost is ${formatCurrency(
-    annualizedHousingCost
-  )}. This treats the security deposit as cash required during the lease; if it is fully refunded, subtract it from the total cost.`;
-
-  return {
-    leaseLengthMonths,
-    monthlyRecurringTotal,
-    oneTimeTotal,
-    trueMonthlyRent,
-    firstMonthTotalCost,
-    totalLeaseCost,
-    annualizedHousingCost,
-    summary,
-    rows,
-  };
-}
-
-function resultText(result: RentResult) {
-  return [
-    'True Rent Calculator result',
-    '',
-    `True monthly rent: ${formatCurrency(result.trueMonthlyRent)}`,
-    `First-month total cost: ${formatCurrency(result.firstMonthTotalCost)}`,
-    `Total lease cost: ${formatCurrency(result.totalLeaseCost)}`,
-    `Annualized housing cost: ${formatCurrency(result.annualizedHousingCost)}`,
-    `Lease length: ${result.leaseLengthMonths} months`,
-    '',
-    result.summary,
-    '',
-    'Fee breakdown:',
-    ...result.rows.map(
-      (row) =>
-        `- ${row.label}: ${row.cadence}, ${formatCurrency(
-          row.amount
-        )}, first month ${formatCurrency(
-          row.firstMonthImpact
-        )}, lease total ${formatCurrency(row.leaseImpact)}`
-    ),
-  ].join('\n');
-}
-
-function csvEscape(value: string | number) {
-  const stringValue = String(value);
-
-  if (/[",\n]/.test(stringValue)) {
-    return `"${stringValue.replaceAll('"', '""')}"`;
-  }
-
-  return stringValue;
-}
-
-function resultCsv(result: RentResult) {
-  const metricRows = [
-    ['Metric', 'Amount'],
-    ['True monthly rent', result.trueMonthlyRent.toFixed(2)],
-    ['First-month total cost', result.firstMonthTotalCost.toFixed(2)],
-    ['Total lease cost', result.totalLeaseCost.toFixed(2)],
-    ['Annualized housing cost', result.annualizedHousingCost.toFixed(2)],
-    ['Lease length months', result.leaseLengthMonths],
-    ['Plain-English summary', result.summary],
-    [],
-    ['Fee', 'Cadence', 'Amount', 'First-month impact', 'Lease total'],
-    ...result.rows.map((row) => [
-      row.label,
-      row.cadence,
-      row.amount.toFixed(2),
-      row.firstMonthImpact.toFixed(2),
-      row.leaseImpact.toFixed(2),
-    ]),
-  ];
-
-  return metricRows
-    .map((row) => row.map((cell) => csvEscape(cell)).join(','))
-    .join('\n');
-}
-
-function hasAnyAmount(form: FormState) {
-  return [...monthlyFields, ...oneTimeFields].some(
-    (field) => parseCurrency(form[field.key]) > 0
-  );
-}
+import {
+  buildRentResult,
+  emptyForm,
+  formatCurrency,
+  getEnteredFeeCounts,
+  hasAnyAmount,
+  monthlyFields,
+  oneTimeFields,
+  resultCsv,
+  resultText,
+  validateRentForm,
+  type FieldErrors,
+  type FormState,
+  type RentResult,
+} from './true-rent-calculator.logic';
 
 function CurrencyField({
   id,
   label,
   value,
   placeholder,
+  error,
   onChange,
 }: {
   id: string;
   label: string;
   value: string;
   placeholder: string;
+  error?: string;
   onChange: (value: string) => void;
 }) {
+  const errorId = `${id}-error`;
+
   return (
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
@@ -318,16 +58,21 @@ function CurrencyField({
         </span>
         <Input
           id={id}
-          type="number"
-          min="0"
-          step="0.01"
+          type="text"
           inputMode="decimal"
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder={placeholder}
           className="pl-7"
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? errorId : undefined}
         />
       </div>
+      {error ? (
+        <p id={errorId} className="text-destructive text-sm">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -335,6 +80,8 @@ function CurrencyField({
 export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [result, setResult] = useState<RentResult | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [formError, setFormError] = useState('');
   const [emptyState, setEmptyState] = useState(
     'Enter rent and fees, then generate your estimate.'
   );
@@ -358,8 +105,22 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
       startedRef.current = true;
     }
 
+    const validation = validateRentForm(form);
+
+    if (validation.message) {
+      setResult(null);
+      setFieldErrors(validation.fieldErrors);
+      setFormError(validation.message);
+      setEmptyState('Fix the highlighted fields, then generate your estimate.');
+      return;
+    }
+
     if (!hasAnyAmount(form)) {
       setResult(null);
+      setFieldErrors({});
+      setFormError(
+        'Enter at least one rent or fee amount to generate an estimate.'
+      );
       setEmptyState(
         'Enter at least one rent or fee amount to generate an estimate.'
       );
@@ -368,24 +129,25 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
 
     const nextResult = buildRentResult(form);
     setResult(nextResult);
+    setFieldErrors({});
+    setFormError('');
 
+    const feeCounts = getEnteredFeeCounts(form);
     trackToolEvent('result_generated', {
       tool_slug: toolSlug,
       lease_length_months: nextResult.leaseLengthMonths,
       true_monthly_rent: Number(nextResult.trueMonthlyRent.toFixed(2)),
       total_lease_cost: Number(nextResult.totalLeaseCost.toFixed(2)),
-      monthly_fee_count: monthlyFields.filter(
-        (field) => parseCurrency(form[field.key]) > 0
-      ).length,
-      one_time_fee_count: oneTimeFields.filter(
-        (field) => parseCurrency(form[field.key]) > 0
-      ).length,
+      monthly_fee_count: feeCounts.monthlyFeeCount,
+      one_time_fee_count: feeCounts.oneTimeFeeCount,
     });
   }
 
   function handleReset() {
     setForm(emptyForm);
     setResult(null);
+    setFieldErrors({});
+    setFormError('');
     setEmptyState('Enter rent and fees, then generate your estimate.');
   }
 
@@ -404,6 +166,15 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
         </CardHeader>
         <CardContent>
           <form className="space-y-8" onSubmit={handleSubmit}>
+            {formError ? (
+              <div
+                role="alert"
+                className="border-destructive/30 bg-destructive/10 text-destructive rounded-md border px-4 py-3 text-sm"
+              >
+                {formError}
+              </div>
+            ) : null}
+
             <section className="space-y-4" aria-labelledby="monthly-costs">
               <div className="space-y-1">
                 <h2 id="monthly-costs" className="text-base font-semibold">
@@ -421,6 +192,7 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
                     label={field.label}
                     value={form[field.key]}
                     placeholder={field.placeholder}
+                    error={fieldErrors[field.key]}
                     onChange={(value) => updateField(field.key, value)}
                   />
                 ))}
@@ -444,6 +216,7 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
                     label={field.label}
                     value={form[field.key]}
                     placeholder={field.placeholder}
+                    error={fieldErrors[field.key]}
                     onChange={(value) => updateField(field.key, value)}
                   />
                 ))}
@@ -455,6 +228,7 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
                     id="true-rent-leaseLengthMonths"
                     type="number"
                     min="1"
+                    max="120"
                     step="1"
                     inputMode="numeric"
                     value={form.leaseLengthMonths}
@@ -462,7 +236,21 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
                       updateField('leaseLengthMonths', event.target.value)
                     }
                     placeholder="12"
+                    aria-invalid={Boolean(fieldErrors.leaseLengthMonths)}
+                    aria-describedby={
+                      fieldErrors.leaseLengthMonths
+                        ? 'true-rent-leaseLengthMonths-error'
+                        : undefined
+                    }
                   />
+                  {fieldErrors.leaseLengthMonths ? (
+                    <p
+                      id="true-rent-leaseLengthMonths-error"
+                      className="text-destructive text-sm"
+                    >
+                      {fieldErrors.leaseLengthMonths}
+                    </p>
+                  ) : null}
                 </div>
               </div>
             </section>
@@ -509,6 +297,18 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
                 label="Annualized housing cost"
                 value={formatCurrency(result.annualizedHousingCost)}
               />
+            </div>
+
+            <div className="rounded-md border p-4">
+              <h3 className="text-sm font-semibold">Plain-English summary</h3>
+              <p className="text-muted-foreground mt-2 text-sm leading-6">
+                {result.summary}
+              </p>
+              <ul className="text-muted-foreground mt-3 list-disc space-y-1 pl-5 text-sm">
+                {result.notes.map((note) => (
+                  <li key={note}>{note}</li>
+                ))}
+              </ul>
             </div>
 
             <div className="space-y-3">
