@@ -30,6 +30,11 @@
           "title": "航空退款信生成器",
           "url": "/tools/airline-refund-claim-letter-generator",
           "icon": "Plane"
+        },
+        {
+          "title": "BNPL 付款日历",
+          "url": "/tools/bnpl-payment-calendar",
+          "icon": "CalendarDays"
         }
       ]
     },
@@ -309,6 +314,11 @@
               "target": "_self"
             },
             {
+              "title": "BNPL 付款日历",
+              "url": "/tools/bnpl-payment-calendar",
+              "target": "_self"
+            },
+            {
               "title": "首页",
               "url": "/",
               "target": "_self"
@@ -318,11 +328,6 @@
         {
           "title": "计划中工具",
           "children": [
-            {
-              "title": "BNPL 付款日历",
-              "url": "/tools",
-              "target": "_self"
-            },
             {
               "title": "Google 评论回复生成器",
               "url": "/tools",

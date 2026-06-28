@@ -30,6 +30,11 @@
           "title": "Refund Letter Generator",
           "url": "/tools/airline-refund-claim-letter-generator",
           "icon": "Plane"
+        },
+        {
+          "title": "BNPL Calendar",
+          "url": "/tools/bnpl-payment-calendar",
+          "icon": "CalendarDays"
         }
       ]
     },
@@ -309,6 +314,11 @@
               "target": "_self"
             },
             {
+              "title": "BNPL Payment Calendar",
+              "url": "/tools/bnpl-payment-calendar",
+              "target": "_self"
+            },
+            {
               "title": "Home",
               "url": "/",
               "target": "_self"
@@ -318,11 +328,6 @@
         {
           "title": "Planned Tools",
           "children": [
-            {
-              "title": "BNPL Payment Calendar",
-              "url": "/tools",
-              "target": "_self"
-            },
             {
               "title": "Google Review Reply Generator",
               "url": "/tools",

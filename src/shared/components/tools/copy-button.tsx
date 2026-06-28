@@ -22,10 +22,14 @@ export function CopyButton({
   text,
   toolSlug,
   disabled,
+  label = 'Copy',
+  copiedLabel = 'Copied',
 }: {
   text: string;
   toolSlug: string;
   disabled?: boolean;
+  label?: string;
+  copiedLabel?: string;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -54,10 +58,10 @@ export function CopyButton({
       variant="outline"
       onClick={handleCopy}
       disabled={disabled || !text}
-      aria-label={copied ? 'Copied result' : 'Copy result'}
+      aria-label={copied ? `${copiedLabel} result` : `${label} result`}
     >
       {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-      <span>{copied ? 'Copied' : 'Copy'}</span>
+      <span>{copied ? copiedLabel : label}</span>
     </Button>
   );
 }

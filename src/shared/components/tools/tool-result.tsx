@@ -21,6 +21,7 @@ export function ToolResult({
   emptyState = 'Complete the form to generate a result.',
   filename,
   toolSlug,
+  copyLabel,
   children,
 }: {
   title?: string;
@@ -30,6 +31,7 @@ export function ToolResult({
   emptyState?: string;
   filename: string;
   toolSlug: string;
+  copyLabel?: string;
   children?: ReactNode;
 }) {
   const hasResult = result.trim().length > 0;
@@ -47,6 +49,7 @@ export function ToolResult({
               text={result}
               toolSlug={toolSlug}
               disabled={!hasResult}
+              label={copyLabel}
             />
             <DownloadButton
               text={downloadText || result}

@@ -160,10 +160,37 @@ export const tools: ToolDefinition[] = [
     description:
       'Turn buy-now-pay-later plans into a readable payment schedule and reminder checklist.',
     category: 'Finance & Payments',
-    status: 'planned',
+    status: 'available',
     href: '/tools/bnpl-payment-calendar',
     icon: 'CalendarDays',
-    keywords: ['bnpl', 'payment calendar', 'installment schedule'],
+    keywords: [
+      'BNPL payment calendar',
+      'buy now pay later schedule',
+      'installment payment calendar',
+      'payment checklist',
+    ],
+    faq: [
+      {
+        question: 'Does this tool connect to my BNPL account?',
+        answer:
+          'No. It only creates a schedule from the amount, first payment date, number of payments, and frequency you enter.',
+      },
+      {
+        question: 'How does the calculator handle cents?',
+        answer:
+          'It splits the purchase into cents so the payment amounts add back to the exact purchase amount. If the amount does not divide evenly, the earliest payments receive the extra cents.',
+      },
+      {
+        question: 'Can I import this into a calendar app?',
+        answer:
+          'Version 1 provides CSV download. You can open the CSV in a spreadsheet or use it as a reference for calendar reminders.',
+      },
+      {
+        question: 'Is this financial advice?',
+        answer:
+          'No. It is a planning checklist for installment payments. Confirm due dates, fees, and payment rules with your BNPL provider or merchant.',
+      },
+    ],
   },
   {
     slug: 'google-review-reply-generator',
