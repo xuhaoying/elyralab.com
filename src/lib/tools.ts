@@ -199,10 +199,38 @@ export const tools: ToolDefinition[] = [
     description:
       'Create thoughtful, on-brand replies for positive, neutral, and negative Google reviews.',
     category: 'Reputation & Marketing',
-    status: 'planned',
+    status: 'available',
     href: '/tools/google-review-reply-generator',
     icon: 'MessageSquareReply',
-    keywords: ['google reviews', 'review replies', 'local business'],
+    keywords: [
+      'Google review reply generator',
+      'review response templates',
+      'local business reviews',
+      'reputation management',
+      'customer review replies',
+    ],
+    faq: [
+      {
+        question: 'Does this tool use AI?',
+        answer:
+          'No. Version 1 uses deterministic templates based on the star rating, tone, business type, and optional names you enter.',
+      },
+      {
+        question: 'How does it handle negative reviews?',
+        answer:
+          'Ratings of 1 or 2 stars generate apology-forward replies that acknowledge the issue, avoid arguing publicly, and invite the customer to continue the conversation directly.',
+      },
+      {
+        question: 'Can I use the replies directly on Google?',
+        answer:
+          'Yes, but review each reply before posting. Add any specific facts, policies, or contact details your business wants to include.',
+      },
+      {
+        question: 'Does it store review text?',
+        answer:
+          'No. The replies are generated in your browser with no login, database, or paid API.',
+      },
+    ],
   },
   {
     slug: 'ai-search-readiness-checker',

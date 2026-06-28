@@ -35,6 +35,11 @@
           "title": "BNPL Calendar",
           "url": "/tools/bnpl-payment-calendar",
           "icon": "CalendarDays"
+        },
+        {
+          "title": "Review Reply Generator",
+          "url": "/tools/google-review-reply-generator",
+          "icon": "MessageSquareReply"
         }
       ]
     },
@@ -319,6 +324,11 @@
               "target": "_self"
             },
             {
+              "title": "Google Review Reply Generator",
+              "url": "/tools/google-review-reply-generator",
+              "target": "_self"
+            },
+            {
               "title": "Home",
               "url": "/",
               "target": "_self"
@@ -328,11 +338,6 @@
         {
           "title": "Planned Tools",
           "children": [
-            {
-              "title": "Google Review Reply Generator",
-              "url": "/tools",
-              "target": "_self"
-            },
             {
               "title": "AI Search Readiness Checker",
               "url": "/tools",

@@ -35,6 +35,11 @@
           "title": "BNPL 付款日历",
           "url": "/tools/bnpl-payment-calendar",
           "icon": "CalendarDays"
+        },
+        {
+          "title": "评论回复生成器",
+          "url": "/tools/google-review-reply-generator",
+          "icon": "MessageSquareReply"
         }
       ]
     },
@@ -319,6 +324,11 @@
               "target": "_self"
             },
             {
+              "title": "Google 评论回复生成器",
+              "url": "/tools/google-review-reply-generator",
+              "target": "_self"
+            },
+            {
               "title": "首页",
               "url": "/",
               "target": "_self"
@@ -328,11 +338,6 @@
         {
           "title": "计划中工具",
           "children": [
-            {
-              "title": "Google 评论回复生成器",
-              "url": "/tools",
-              "target": "_self"
-            },
             {
               "title": "AI 搜索就绪检查器",
               "url": "/tools",
