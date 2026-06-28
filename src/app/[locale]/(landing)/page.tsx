@@ -1,16 +1,12 @@
+import { getAllTools, getPublishedTools, toolCategories } from '@/lib/tools';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { setRequestLocale } from 'next-intl/server';
 
-import {
-  getAllTools,
-  getPublishedTools,
-  toolCategories,
-} from '@/lib/tools';
 import { Link } from '@/core/i18n/navigation';
+import { ToolCard, ToolHero } from '@/shared/components/tools';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { getMetadata } from '@/shared/lib/seo';
-import { ToolCard, ToolHero } from '@/shared/components/tools';
 
 export const generateMetadata = getMetadata({
   title: 'ElyraLab Tool Library | Free Everyday Workflow Tools',
@@ -105,6 +101,26 @@ export default async function LandingPage({
               })}
             </div>
           </aside>
+        </div>
+      </section>
+
+      <section className="container pb-20">
+        <div className="border-border bg-muted/30 flex flex-col gap-5 rounded-lg border p-6 sm:flex-row sm:items-center sm:justify-between md:p-8">
+          <div className="space-y-2">
+            <h2 className="text-2xl font-semibold">
+              Browse the full directory
+            </h2>
+            <p className="text-muted-foreground max-w-2xl leading-7">
+              See every implemented tool by category and move between related
+              workflows from a single index.
+            </p>
+          </div>
+          <Button asChild>
+            <Link href="/tools">
+              Open tool directory
+              <ArrowRight className="size-4" />
+            </Link>
+          </Button>
         </div>
       </section>
     </main>

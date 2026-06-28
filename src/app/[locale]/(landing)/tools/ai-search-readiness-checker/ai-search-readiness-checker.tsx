@@ -1,9 +1,10 @@
 'use client';
 
 import { FormEvent, useRef, useState } from 'react';
+import { trackToolEvent } from '@/lib/analytics';
 import { RotateCcw, SearchCheck } from 'lucide-react';
 
-import { trackToolEvent } from '@/lib/analytics';
+import { ToolResult } from '@/shared/components/tools';
 import { Button } from '@/shared/components/ui/button';
 import {
   Card,
@@ -22,7 +23,6 @@ import {
   SelectValue,
 } from '@/shared/components/ui/select';
 import { Textarea } from '@/shared/components/ui/textarea';
-import { ToolResult } from '@/shared/components/tools';
 
 type BinaryAnswer = 'yes' | 'no';
 type TernaryAnswer = 'yes' | 'no' | 'unknown';
@@ -244,12 +244,12 @@ function buildResult(form: FormState): ReadinessResult {
 
 function resultText(form: FormState, result: ReadinessResult) {
   const lines = [
-    'AI Search Readiness Checker result',
+    'AI search readiness score',
     '',
     `Website URL: ${form.websiteUrl.trim()}`,
     `Brand name: ${form.brandName.trim()}`,
     `Target audience: ${form.targetAudience.trim()}`,
-    `Score: ${result.score}/100`,
+    `AI search readiness score: ${result.score}/100`,
     `Readiness level: ${result.level}`,
     '',
     'Summary:',
@@ -268,7 +268,9 @@ function resultText(form: FormState, result: ReadinessResult) {
     'Priority checklist:',
     ...(result.priorityChecklist.length > 0
       ? result.priorityChecklist.map((item) => `[ ] ${item}`)
-      : ['[ ] Maintain current AI-search foundations and refresh content regularly.']),
+      : [
+          '[ ] Maintain current AI-search foundations and refresh content regularly.',
+        ]),
     '',
     'Next-step recommendations:',
     ...(result.recommendations.length > 0
@@ -297,14 +299,19 @@ function OptionSelect({
   return (
     <div className="space-y-2">
       <Label htmlFor={id}>{label}</Label>
-      <Select value={value} onValueChange={(next) => onChange(next as TernaryAnswer)}>
+      <Select
+        value={value}
+        onValueChange={(next) => onChange(next as TernaryAnswer)}
+      >
         <SelectTrigger id={id} className="w-full">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="yes">Yes</SelectItem>
           <SelectItem value="no">No</SelectItem>
-          {includeUnknown ? <SelectItem value="unknown">Unknown</SelectItem> : null}
+          {includeUnknown ? (
+            <SelectItem value="unknown">Unknown</SelectItem>
+          ) : null}
         </SelectContent>
       </Select>
     </div>
@@ -343,7 +350,9 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
       !form.targetAudience.trim()
     ) {
       setResult(null);
-      setEmptyState('Website URL, brand name, and target audience are required.');
+      setEmptyState(
+        'Website URL, brand name, and target audience are required.'
+      );
       return;
     }
 
@@ -500,7 +509,7 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
               </Button>
               <Button type="submit">
                 <SearchCheck className="size-4" />
-                Check readiness
+                Generate report
               </Button>
             </div>
           </form>
@@ -508,7 +517,7 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
       </Card>
 
       <ToolResult
-        title="AI search readiness report"
+        title="AI search readiness score"
         description="Copy or download this self-assessment summary."
         result={output}
         filename="ai-search-readiness-report.txt"
@@ -518,7 +527,10 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
         {result ? (
           <div className="space-y-5" aria-live="polite">
             <div className="grid gap-3 sm:grid-cols-3">
-              <MetricCard label="Score" value={`${result.score}/100`} />
+              <MetricCard
+                label="AI search readiness score"
+                value={`${result.score}/100`}
+              />
               <MetricCard label="Level" value={result.level} />
               <MetricCard
                 label="Priority items"
@@ -526,7 +538,11 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
               />
             </div>
 
-            <ResultList title="Strengths" items={result.strengths} empty="No strengths selected yet." />
+            <ResultList
+              title="Strengths"
+              items={result.strengths}
+              empty="No strengths selected yet."
+            />
             <ResultList
               title="Missing items"
               items={result.missingItems}
@@ -556,7 +572,7 @@ function MetricCard({ label, value }: { label: string; value: string }) {
       <div className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
         {label}
       </div>
-      <div className="mt-2 text-xl font-semibold leading-7">{value}</div>
+      <div className="mt-2 text-xl leading-7 font-semibold">{value}</div>
     </div>
   );
 }

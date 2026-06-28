@@ -1,9 +1,10 @@
 'use client';
 
 import { FormEvent, useRef, useState } from 'react';
+import { trackToolEvent } from '@/lib/analytics';
 import { Calculator, RotateCcw } from 'lucide-react';
 
-import { trackToolEvent } from '@/lib/analytics';
+import { ToolResult } from '@/shared/components/tools';
 import { Button } from '@/shared/components/ui/button';
 import {
   Card,
@@ -14,7 +15,6 @@ import {
 } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
-import { ToolResult } from '@/shared/components/tools';
 
 interface FormState {
   baseMonthlyRent: string;
@@ -238,9 +238,7 @@ function resultText(result: RentResult) {
     `True monthly rent: ${formatCurrency(result.trueMonthlyRent)}`,
     `First-month total cost: ${formatCurrency(result.firstMonthTotalCost)}`,
     `Total lease cost: ${formatCurrency(result.totalLeaseCost)}`,
-    `Annualized housing cost: ${formatCurrency(
-      result.annualizedHousingCost
-    )}`,
+    `Annualized housing cost: ${formatCurrency(result.annualizedHousingCost)}`,
     `Lease length: ${result.leaseLengthMonths} months`,
     '',
     result.summary,
@@ -277,13 +275,7 @@ function resultCsv(result: RentResult) {
     ['Lease length months', result.leaseLengthMonths],
     ['Plain-English summary', result.summary],
     [],
-    [
-      'Fee',
-      'Cadence',
-      'Amount',
-      'First-month impact',
-      'Lease total',
-    ],
+    ['Fee', 'Cadence', 'Amount', 'First-month impact', 'Lease total'],
     ...result.rows.map((row) => [
       row.label,
       row.cadence,
@@ -344,7 +336,7 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [result, setResult] = useState<RentResult | null>(null);
   const [emptyState, setEmptyState] = useState(
-    'Enter rent and fees, then calculate your true rent.'
+    'Enter rent and fees, then generate your estimate.'
   );
   const startedRef = useRef(false);
 
@@ -368,7 +360,9 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
 
     if (!hasAnyAmount(form)) {
       setResult(null);
-      setEmptyState('Enter at least one rent or fee amount to calculate.');
+      setEmptyState(
+        'Enter at least one rent or fee amount to generate an estimate.'
+      );
       return;
     }
 
@@ -392,7 +386,7 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
   function handleReset() {
     setForm(emptyForm);
     setResult(null);
-    setEmptyState('Enter rent and fees, then calculate your true rent.');
+    setEmptyState('Enter rent and fees, then generate your estimate.');
   }
 
   const textResult = result ? resultText(result) : '';
@@ -404,8 +398,8 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
         <CardHeader>
           <CardTitle>Rent details</CardTitle>
           <CardDescription>
-            Enter monthly charges and move-in costs. Leave fields blank when they
-            do not apply.
+            Enter monthly charges and move-in costs. Leave fields blank when
+            they do not apply.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -480,7 +474,7 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
               </Button>
               <Button type="submit">
                 <Calculator className="size-4" />
-                Calculate true rent
+                Generate estimate
               </Button>
             </div>
           </form>

@@ -290,7 +290,7 @@ export function getToolsByCategory(category: ToolCategory) {
   return tools.filter((tool) => tool.category === category);
 }
 
-export function getRelatedTools(slug: string, limit = 3) {
+export function getRelatedTools(slug: string, limit = 5) {
   const current = getToolBySlug(slug);
 
   if (!current) {
