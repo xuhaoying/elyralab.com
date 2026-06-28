@@ -40,6 +40,11 @@
           "title": "评论回复生成器",
           "url": "/tools/google-review-reply-generator",
           "icon": "MessageSquareReply"
+        },
+        {
+          "title": "AI 搜索检查器",
+          "url": "/tools/ai-search-readiness-checker",
+          "icon": "SearchCheck"
         }
       ]
     },
@@ -329,18 +334,13 @@
               "target": "_self"
             },
             {
+              "title": "AI 搜索就绪检查器",
+              "url": "/tools/ai-search-readiness-checker",
+              "target": "_self"
+            },
+            {
               "title": "首页",
               "url": "/",
-              "target": "_self"
-            }
-          ]
-        },
-        {
-          "title": "计划中工具",
-          "children": [
-            {
-              "title": "AI 搜索就绪检查器",
-              "url": "/tools",
               "target": "_self"
             }
           ]

@@ -239,10 +239,38 @@ export const tools: ToolDefinition[] = [
     description:
       'Check whether a page is structured for AI search answers, citations, and entity clarity.',
     category: 'AI & SEO',
-    status: 'planned',
+    status: 'available',
     href: '/tools/ai-search-readiness-checker',
     icon: 'SearchCheck',
-    keywords: ['ai search', 'seo checker', 'answer engine optimization'],
+    keywords: [
+      'AI search readiness checker',
+      'AI SEO checklist',
+      'answer engine optimization',
+      'llms.txt',
+      'structured data checker',
+    ],
+    faq: [
+      {
+        question: 'Does this checker crawl my website?',
+        answer:
+          'No. Version 1 is a self-assessment. It scores only the answers you provide and does not crawl, fetch, or inspect the website URL.',
+      },
+      {
+        question: 'What does the score measure?',
+        answer:
+          'The score estimates whether your site has the foundations AI search systems often need: clear entity information, product pages, FAQ content, schema, llms.txt, comparison pages, and unique data.',
+      },
+      {
+        question: 'Should every site have llms.txt?',
+        answer:
+          'Not necessarily. It is an emerging convention, but it can be useful for pointing AI systems toward your most important docs, policies, and canonical content.',
+      },
+      {
+        question: 'Is this a full SEO audit?',
+        answer:
+          'No. It is a lightweight readiness checklist for AI search visibility. A full audit should also review technical crawlability, content quality, backlinks, analytics, and actual search performance.',
+      },
+    ],
   },
 ];
 

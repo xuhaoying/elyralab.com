@@ -40,6 +40,11 @@
           "title": "Review Reply Generator",
           "url": "/tools/google-review-reply-generator",
           "icon": "MessageSquareReply"
+        },
+        {
+          "title": "AI Search Checker",
+          "url": "/tools/ai-search-readiness-checker",
+          "icon": "SearchCheck"
         }
       ]
     },
@@ -329,18 +334,13 @@
               "target": "_self"
             },
             {
+              "title": "AI Search Readiness Checker",
+              "url": "/tools/ai-search-readiness-checker",
+              "target": "_self"
+            },
+            {
               "title": "Home",
               "url": "/",
-              "target": "_self"
-            }
-          ]
-        },
-        {
-          "title": "Planned Tools",
-          "children": [
-            {
-              "title": "AI Search Readiness Checker",
-              "url": "/tools",
               "target": "_self"
             }
           ]
