@@ -31,7 +31,6 @@ export default async function LandingPage({
 
   const publishedTools = getPublishedTools();
   const allTools = getAllTools();
-  const firstTool = publishedTools[0];
 
   return (
     <main>
@@ -61,10 +60,10 @@ export default async function LandingPage({
           <div className="space-y-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div className="space-y-2">
-                <h2 className="text-2xl font-semibold">Start with a tool</h2>
+                <h2 className="text-2xl font-semibold">Available tools</h2>
                 <p className="text-muted-foreground max-w-2xl leading-7">
-                  The first live tool helps you build precise Gmail search
-                  queries from simple filters.
+                  Start with the live tools in the library. Planned tools stay
+                  visible in the directory so the roadmap is easy to scan.
                 </p>
               </div>
               <Button asChild variant="outline">
@@ -75,7 +74,11 @@ export default async function LandingPage({
               </Button>
             </div>
 
-            {firstTool ? <ToolCard tool={firstTool} /> : null}
+            <div className="grid gap-4 md:grid-cols-2">
+              {publishedTools.map((tool) => (
+                <ToolCard key={tool.slug} tool={tool} />
+              ))}
+            </div>
           </div>
 
           <aside className="space-y-4">

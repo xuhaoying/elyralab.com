@@ -20,6 +20,11 @@
           "title": "Gmail Query Generator",
           "url": "/tools/gmail-search-query-generator",
           "icon": "MailSearch"
+        },
+        {
+          "title": "True Rent Calculator",
+          "url": "/tools/true-rent-calculator",
+          "icon": "Calculator"
         }
       ]
     },
@@ -289,6 +294,11 @@
               "target": "_self"
             },
             {
+              "title": "True Rent Calculator",
+              "url": "/tools/true-rent-calculator",
+              "target": "_self"
+            },
+            {
               "title": "Home",
               "url": "/",
               "target": "_self"
@@ -298,11 +308,6 @@
         {
           "title": "Planned Tools",
           "children": [
-            {
-              "title": "True Rent Calculator",
-              "url": "/tools",
-              "target": "_self"
-            },
             {
               "title": "Airline Refund Claim Letter Generator",
               "url": "/tools",

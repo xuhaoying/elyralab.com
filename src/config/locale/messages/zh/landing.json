@@ -20,6 +20,11 @@
           "title": "Gmail 查询生成器",
           "url": "/tools/gmail-search-query-generator",
           "icon": "MailSearch"
+        },
+        {
+          "title": "真实租金计算器",
+          "url": "/tools/true-rent-calculator",
+          "icon": "Calculator"
         }
       ]
     },
@@ -289,6 +294,11 @@
               "target": "_self"
             },
             {
+              "title": "真实租金计算器",
+              "url": "/tools/true-rent-calculator",
+              "target": "_self"
+            },
+            {
               "title": "首页",
               "url": "/",
               "target": "_self"
@@ -298,11 +308,6 @@
         {
           "title": "计划中工具",
           "children": [
-            {
-              "title": "真实租金计算器",
-              "url": "/tools",
-              "target": "_self"
-            },
             {
               "title": "航空退款索赔信生成器",
               "url": "/tools",

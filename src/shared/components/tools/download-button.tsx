@@ -16,12 +16,18 @@ export function DownloadButton({
   toolSlug: string;
   disabled?: boolean;
 }) {
+  const extension = filename.includes('.')
+    ? filename.split('.').pop()?.toLowerCase()
+    : 'txt';
+  const mimeType =
+    extension === 'csv' ? 'text/csv;charset=utf-8' : 'text/plain;charset=utf-8';
+
   function handleDownload() {
     if (!text) {
       return;
     }
 
-    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const blob = new Blob([text], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
 
@@ -47,7 +53,7 @@ export function DownloadButton({
       disabled={disabled || !text}
     >
       <Download className="size-4" />
-      <span>Download .txt</span>
+      <span>Download .{extension || 'txt'}</span>
     </Button>
   );
 }

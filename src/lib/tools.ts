@@ -78,12 +78,40 @@ export const tools: ToolDefinition[] = [
     name: 'True Rent Calculator',
     shortName: 'True Rent Calculator',
     description:
-      'Estimate the real monthly cost of rent after fees, utilities, deposits, commute, and incentives.',
+      'Estimate the real monthly cost of rent after utilities, recurring fees, deposits, and move-in costs.',
     category: 'Finance & Payments',
-    status: 'planned',
+    status: 'available',
     href: '/tools/true-rent-calculator',
     icon: 'Calculator',
-    keywords: ['rent calculator', 'apartment costs', 'housing budget'],
+    keywords: [
+      'true rent calculator',
+      'rent calculator',
+      'apartment fees',
+      'move in cost calculator',
+      'housing budget',
+    ],
+    faq: [
+      {
+        question: 'What does true monthly rent include?',
+        answer:
+          'It includes base rent, recurring monthly fees, and one-time upfront charges spread across the lease length. This gives a better monthly comparison than rent alone.',
+      },
+      {
+        question: 'How is the security deposit treated?',
+        answer:
+          'The calculator includes the security deposit as cash required during the lease. If it is fully refunded, subtract it from the total lease cost and divide it by the lease length to adjust the true monthly amount.',
+      },
+      {
+        question: 'Is this a financial or legal recommendation?',
+        answer:
+          'No. It is a budgeting worksheet that helps you compare rental listings. Always check your lease and local rules for exact fees and refundable deposits.',
+      },
+      {
+        question: 'Does this tool save my rent numbers?',
+        answer:
+          'No. The calculation runs in your browser. It does not require login, store data, or call a paid API.',
+      },
+    ],
   },
   {
     slug: 'airline-refund-claim-letter-generator',
