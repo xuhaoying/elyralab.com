@@ -120,10 +120,38 @@ export const tools: ToolDefinition[] = [
     description:
       'Draft a clear airline refund or compensation claim letter from flight and disruption details.',
     category: 'Travel & Consumer Rights',
-    status: 'planned',
+    status: 'available',
     href: '/tools/airline-refund-claim-letter-generator',
     icon: 'Plane',
-    keywords: ['airline refund', 'flight compensation', 'claim letter'],
+    keywords: [
+      'airline refund',
+      'flight compensation',
+      'claim letter',
+      'cancelled flight refund',
+      'denied boarding claim',
+    ],
+    faq: [
+      {
+        question: 'Does this generator use AI?',
+        answer:
+          'No. The first version uses deterministic templates based on the details you enter. It does not call an AI API.',
+      },
+      {
+        question: 'Is this legal advice?',
+        answer:
+          'No. It is a drafting aid for a customer service claim. Airline policies and passenger rights rules vary by country, route, and ticket type, so check the rules that apply to your trip.',
+      },
+      {
+        question: 'What should I attach to the claim?',
+        answer:
+          'Attach booking confirmation, boarding pass or check-in proof, airline disruption notices, refund denial messages, expense receipts, and any timeline evidence that supports your request.',
+      },
+      {
+        question: 'Does this tool save my flight details?',
+        answer:
+          'No. The letter is generated in your browser. The tool requires no login, database, or paid API.',
+      },
+    ],
   },
   {
     slug: 'bnpl-payment-calendar',

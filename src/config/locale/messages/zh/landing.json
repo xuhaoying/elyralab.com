@@ -25,6 +25,11 @@
           "title": "真实租金计算器",
           "url": "/tools/true-rent-calculator",
           "icon": "Calculator"
+        },
+        {
+          "title": "航空退款信生成器",
+          "url": "/tools/airline-refund-claim-letter-generator",
+          "icon": "Plane"
         }
       ]
     },
@@ -299,6 +304,11 @@
               "target": "_self"
             },
             {
+              "title": "航空退款索赔信生成器",
+              "url": "/tools/airline-refund-claim-letter-generator",
+              "target": "_self"
+            },
+            {
               "title": "首页",
               "url": "/",
               "target": "_self"
@@ -308,11 +318,6 @@
         {
           "title": "计划中工具",
           "children": [
-            {
-              "title": "航空退款索赔信生成器",
-              "url": "/tools",
-              "target": "_self"
-            },
             {
               "title": "BNPL 付款日历",
               "url": "/tools",

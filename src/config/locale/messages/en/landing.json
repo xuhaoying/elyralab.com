@@ -25,6 +25,11 @@
           "title": "True Rent Calculator",
           "url": "/tools/true-rent-calculator",
           "icon": "Calculator"
+        },
+        {
+          "title": "Refund Letter Generator",
+          "url": "/tools/airline-refund-claim-letter-generator",
+          "icon": "Plane"
         }
       ]
     },
@@ -299,6 +304,11 @@
               "target": "_self"
             },
             {
+              "title": "Airline Refund Claim Letter Generator",
+              "url": "/tools/airline-refund-claim-letter-generator",
+              "target": "_self"
+            },
+            {
               "title": "Home",
               "url": "/",
               "target": "_self"
@@ -308,11 +318,6 @@
         {
           "title": "Planned Tools",
           "children": [
-            {
-              "title": "Airline Refund Claim Letter Generator",
-              "url": "/tools",
-              "target": "_self"
-            },
             {
               "title": "BNPL Payment Calendar",
               "url": "/tools",
