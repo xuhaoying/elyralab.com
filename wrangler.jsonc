@@ -1,0 +1,38 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "elyralab",
+  "compatibility_date": "2026-06-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      // Self-reference service binding required by OpenNext cache/revalidation.
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "elyralab"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "elyralab-opennext-cache"
+    }
+  ],
+  "images": {
+    "binding": "IMAGES"
+  },
+  "vars": {
+    "NEXT_PUBLIC_APP_URL": "https://elyralab.com",
+    "NEXT_PUBLIC_APP_NAME": "ElyraLab",
+    "NEXT_PUBLIC_THEME": "default",
+    "NEXT_PUBLIC_APPEARANCE": "system",
+    "NEXT_PUBLIC_DEFAULT_LOCALE": "en",
+    "DATABASE_PROVIDER": "postgresql",
+    "DB_SINGLETON_ENABLED": "true",
+    "DB_MAX_CONNECTIONS": "1",
+    "NEXT_INC_CACHE_R2_PREFIX": "incremental-cache"
+  }
+}

@@ -7,7 +7,12 @@ export async function GET() {
     const configs = await getAllConfigs();
 
     if (!configs.adsense_code) {
-      throw new Error('adsense_code is not set');
+      return new NextResponse('', {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/plain',
+        },
+      });
     }
 
     const adsenseCode = configs.adsense_code.replace('ca-', '');

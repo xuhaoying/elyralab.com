@@ -7,6 +7,8 @@ import { trackToolEvent } from '@/lib/analytics';
 import type { AnalyticsProperties } from '@/lib/analytics';
 import { Button } from '@/shared/components/ui/button';
 
+const CLIPBOARD_WRITE_TIMEOUT_MS = 800;
+
 function fallbackCopy(text: string) {
   const textarea = document.createElement('textarea');
   textarea.value = text;
@@ -18,6 +20,26 @@ function fallbackCopy(text: string) {
   const copied = document.execCommand('copy');
   document.body.removeChild(textarea);
   return copied;
+}
+
+async function writeClipboard(text: string) {
+  if (!navigator.clipboard?.writeText) {
+    return false;
+  }
+
+  try {
+    const writePromise = navigator.clipboard
+      .writeText(text)
+      .then(() => true)
+      .catch(() => false);
+    const timeoutPromise = new Promise<boolean>((resolve) => {
+      window.setTimeout(() => resolve(false), CLIPBOARD_WRITE_TIMEOUT_MS);
+    });
+
+    return await Promise.race([writePromise, timeoutPromise]);
+  } catch {
+    return false;
+  }
 }
 
 export function CopyButton({
@@ -44,15 +66,9 @@ export function CopyButton({
     }
 
     try {
-      if (navigator.clipboard?.writeText) {
-        try {
-          await navigator.clipboard.writeText(text);
-        } catch {
-          if (!fallbackCopy(text)) {
-            throw new Error('Copy failed');
-          }
-        }
-      } else if (!fallbackCopy(text)) {
+      const copiedWithClipboard = await writeClipboard(text);
+
+      if (!copiedWithClipboard && !fallbackCopy(text)) {
         throw new Error('Copy failed');
       }
 

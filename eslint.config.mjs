@@ -9,6 +9,7 @@ const config = [
       'dist/**',
       'out/**',
       'coverage/**',
+      'src/shared/types/cloudflare.d.ts',
     ],
   },
   ...nextCoreWebVitals,

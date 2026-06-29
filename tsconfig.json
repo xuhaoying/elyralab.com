@@ -45,6 +45,7 @@
     "node_modules",
     ".next",
     "out",
-    "dist"
+    "dist",
+    "src/shared/types/cloudflare.d.ts"
   ]
 }
