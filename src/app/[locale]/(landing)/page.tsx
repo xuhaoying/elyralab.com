@@ -1,4 +1,4 @@
-import { getAllTools, getPublishedTools, toolCategories } from '@/lib/tools';
+import { getPublishedTools, toolCategories } from '@/lib/tools';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { setRequestLocale } from 'next-intl/server';
 
@@ -26,7 +26,6 @@ export default async function LandingPage({
   setRequestLocale(locale);
 
   const publishedTools = getPublishedTools();
-  const allTools = getAllTools();
 
   return (
     <main>
@@ -38,7 +37,9 @@ export default async function LandingPage({
         <Card className="rounded-lg">
           <CardContent className="grid grid-cols-2 gap-4 p-5">
             <div>
-              <div className="text-3xl font-semibold">{allTools.length}</div>
+              <div className="text-3xl font-semibold">
+                {publishedTools.length}
+              </div>
               <div className="text-muted-foreground text-sm">
                 Tools in library
               </div>
@@ -61,7 +62,7 @@ export default async function LandingPage({
                 <h2 className="text-2xl font-semibold">Available tools</h2>
                 <p className="text-muted-foreground max-w-2xl leading-7">
                   Start with the live tools in the library. Planned tools stay
-                  visible in the directory so the roadmap is easy to scan.
+                  out of public navigation until they have a usable route.
                 </p>
               </div>
               <Button asChild variant="outline">
@@ -86,7 +87,7 @@ export default async function LandingPage({
             </div>
             <div className="grid gap-3">
               {toolCategories.map((category) => {
-                const count = allTools.filter(
+                const count = publishedTools.filter(
                   (tool) => tool.category === category
                 ).length;
 

@@ -119,6 +119,66 @@ export async function getPaymentService(
   return paymentService;
 }
 
+function normalizeCurrency(currency?: string | null) {
+  return String(currency || '').trim().toLowerCase();
+}
+
+function metadataValue(metadata: any, key: string) {
+  return metadata && typeof metadata === 'object' ? metadata[key] : undefined;
+}
+
+function hasValidPaymentAmount(order: Order, session: PaymentSession) {
+  const info = session.paymentInfo;
+  if (!info || !Number.isFinite(info.paymentAmount) || info.paymentAmount <= 0) {
+    return true;
+  }
+
+  const paidAmount = info.paymentAmount || 0;
+  const discountAmount = info.discountAmount || 0;
+  return paidAmount === order.amount || paidAmount + discountAmount === order.amount;
+}
+
+export function assertPaymentSessionMatchesOrder({
+  order,
+  session,
+  provider,
+}: {
+  order: Order;
+  session: PaymentSession;
+  provider: string;
+}) {
+  if (order.paymentProvider !== provider || session.provider !== provider) {
+    throw new Error('payment provider mismatch');
+  }
+
+  const metadataOrderNo = metadataValue(session.metadata, 'order_no');
+  if (metadataOrderNo && metadataOrderNo !== order.orderNo) {
+    throw new Error('payment metadata order mismatch');
+  }
+
+  const metadataUserId = metadataValue(session.metadata, 'user_id');
+  if (metadataUserId && metadataUserId !== order.userId) {
+    throw new Error('payment metadata user mismatch');
+  }
+
+  const metadataProductId = metadataValue(session.metadata, 'product_id');
+  if (metadataProductId && metadataProductId !== order.productId) {
+    throw new Error('payment metadata product mismatch');
+  }
+
+  const paymentCurrency = session.paymentInfo?.paymentCurrency;
+  if (
+    paymentCurrency &&
+    normalizeCurrency(paymentCurrency) !== normalizeCurrency(order.currency)
+  ) {
+    throw new Error('payment currency mismatch');
+  }
+
+  if (!hasValidPaymentAmount(order, session)) {
+    throw new Error('payment amount mismatch');
+  }
+}
+
 /**
  * handle checkout success
  */

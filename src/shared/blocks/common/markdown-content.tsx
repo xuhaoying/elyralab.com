@@ -10,10 +10,13 @@ function generateHeadingId(text: string): string {
 }
 
 const md = new MarkdownIt({
-  html: true,
+  html: false,
   linkify: true,
   breaks: true,
 });
+const defaultValidateLink = md.validateLink;
+md.validateLink = (url) =>
+  defaultValidateLink(url) && !url.trim().toLowerCase().startsWith('data:');
 
 // Custom renderer for headings with IDs
 md.renderer.rules.heading_open = function (tokens, idx) {

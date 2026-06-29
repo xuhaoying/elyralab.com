@@ -55,14 +55,18 @@ export default async function PromptAddPage({
         title: t('fields.prompt_description'),
       },
     ],
-    passby: {},
     data: {},
     submit: {
       button: {
         title: 'Submit',
       },
-      handler: async (data, passby) => {
+      handler: async (data) => {
         'use server';
+
+        await requireAnyPermission({
+          codes: PROMPT_WRITE_PERMISSION_CODES,
+          locale,
+        });
 
         const user = await getUserInfo();
         if (!user) {

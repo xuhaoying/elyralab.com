@@ -44,6 +44,11 @@ export default async function PromptDeletePage({
   const confirmDelete = async () => {
     'use server';
 
+    await requireAnyPermission({
+      codes: PROMPT_DELETE_PERMISSION_CODES,
+      locale,
+    });
+
     const authUser = await getUserInfo();
     if (!authUser) {
       redirect('/sign-in');

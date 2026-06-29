@@ -22,6 +22,11 @@ declare global {
       options?: { props?: Record<string, unknown> }
     ) => void;
     clarity?: (command: 'event', eventName: string) => void;
+    op?: (
+      command: 'track' | 'init',
+      eventNameOrOptions: string | Record<string, unknown>,
+      properties?: Record<string, unknown>
+    ) => void;
     va?: (
       command: 'event',
       payload: { name: string; data?: Record<string, unknown> }
@@ -55,6 +60,9 @@ export function trackToolEvent(
 
     window.clarity?.('event', eventName);
     tracked = tracked || Boolean(window.clarity);
+
+    window.op?.('track', eventName, props);
+    tracked = tracked || Boolean(window.op);
 
     window.va?.('event', { name: eventName, data: props });
     tracked = tracked || Boolean(window.va);

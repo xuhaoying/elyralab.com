@@ -109,24 +109,25 @@ export default async function PostEditPage({
         title: t('fields.content'),
       },
     ],
-    passby: {
-      type: 'post',
-      post: post,
-    },
     data: post,
     submit: {
       button: {
         title: t('edit.buttons.submit'),
       },
-      handler: async (data, passby) => {
+      handler: async (data) => {
         'use server';
+
+        await requirePermission({
+          code: PERMISSIONS.POSTS_WRITE,
+          locale,
+        });
 
         const user = await getUserInfo();
         if (!user) {
           throw new Error('no auth');
         }
 
-        const { post } = passby;
+        const post = await findPost({ id });
 
         if (!user || !post) {
           throw new Error('no auth');

@@ -22,5 +22,10 @@
       "maxDuration": 30
     }
   },
-  "crons": []
+  "crons": [
+    {
+      "path": "/api/ai/dispatch",
+      "schedule": "*/5 * * * *"
+    }
+  ]
 }

@@ -58,16 +58,18 @@ export default async function CategoryAddPage({
         title: t('fields.description'),
       },
     ],
-    passby: {
-      type: 'category',
-    },
     data: {},
     submit: {
       button: {
         title: t('add.buttons.submit'),
       },
-      handler: async (data, passby) => {
+      handler: async (data) => {
         'use server';
+
+        await requirePermission({
+          code: PERMISSIONS.CATEGORIES_WRITE,
+          locale,
+        });
 
         const user = await getUserInfo();
         if (!user) {

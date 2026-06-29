@@ -1,5 +1,11 @@
 import { sql } from 'drizzle-orm';
-import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import {
+  index,
+  integer,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from 'drizzle-orm/sqlite-core';
 
 // SQLite has no schema concept like Postgres. Keep a `table` alias to minimize diff with pg schema.
 const table = sqliteTable;
@@ -256,7 +262,7 @@ export const order = table(
     ),
     // Composite: Prevent duplicate payments
     // Can also be used for: WHERE transactionId = ? (left-prefix)
-    index('idx_order_transaction_provider').on(
+    uniqueIndex('idx_order_transaction_provider').on(
       table.transactionId,
       table.paymentProvider
     ),
@@ -319,7 +325,7 @@ export const subscription = table(
     ),
     // Composite: Prevent duplicate subscriptions
     // Can also be used for: WHERE paymentProvider = ? (left-prefix)
-    index('idx_subscription_provider_id').on(
+    uniqueIndex('idx_subscription_provider_id').on(
       table.subscriptionId,
       table.paymentProvider
     ),

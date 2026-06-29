@@ -1,8 +1,11 @@
 import { MetadataRoute } from 'next';
-import { getAllTools } from '@/lib/tools';
+import { getPublishedTools } from '@/lib/tools';
 
-import { envConfigs } from '@/config';
-import { defaultLocale, locales } from '@/config/locale';
+import { locales } from '@/config/locale';
+import {
+  getLanguageAlternates,
+  getLocalizedUrl,
+} from '@/shared/lib/seo';
 
 const lastModified = new Date('2026-06-29T00:00:00.000Z');
 
@@ -23,32 +26,59 @@ const staticPages = [
     changeFrequency: 'weekly',
   },
   {
+    path: '/pricing',
+    priority: 0.7,
+    changeFrequency: 'weekly',
+  },
+  {
+    path: '/create',
+    priority: 0.7,
+    changeFrequency: 'weekly',
+  },
+  {
+    path: '/prompts',
+    priority: 0.6,
+    changeFrequency: 'weekly',
+  },
+  {
     path: '/showcases',
+    priority: 0.4,
+    changeFrequency: 'monthly',
+  },
+  {
+    path: '/updates',
+    priority: 0.4,
+    changeFrequency: 'weekly',
+  },
+  {
+    path: '/hairstyles',
+    priority: 0.6,
+    changeFrequency: 'monthly',
+  },
+  {
+    path: '/ai-image-generator',
+    priority: 0.7,
+    changeFrequency: 'weekly',
+  },
+  {
+    path: '/ai-video-generator',
+    priority: 0.7,
+    changeFrequency: 'weekly',
+  },
+  {
+    path: '/ai-music-generator',
+    priority: 0.7,
+    changeFrequency: 'weekly',
+  },
+  {
+    path: '/docs',
     priority: 0.4,
     changeFrequency: 'monthly',
   },
 ] as const;
 
-function getBaseUrl() {
-  return envConfigs.app_url.replace(/\/$/, '');
-}
-
-function getLocalizedUrl(path: string, locale: string) {
-  const baseUrl = getBaseUrl();
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  const localePrefix = locale === defaultLocale ? '' : `/${locale}`;
-
-  return `${baseUrl}${localePrefix}${normalizedPath}`;
-}
-
-function getLanguageAlternates(path: string) {
-  return Object.fromEntries(
-    locales.map((locale) => [locale, getLocalizedUrl(path, locale)])
-  );
-}
-
 export default function sitemap(): MetadataRoute.Sitemap {
-  const toolPages = getAllTools().map((tool) => ({
+  const toolPages = getPublishedTools().map((tool) => ({
     path: tool.href,
     priority: 0.8,
     changeFrequency: 'monthly',

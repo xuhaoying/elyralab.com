@@ -1,6 +1,6 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { PERMISSIONS, requirePermission } from '@/core/rbac';
+import { PERMISSIONS, requireAllPermissions } from '@/core/rbac';
 import { Empty } from '@/shared/blocks/common';
 import { Header, Main, MainHeader } from '@/shared/blocks/dashboard';
 import { FormCard } from '@/shared/blocks/form';
@@ -18,8 +18,8 @@ export default async function UserGrantCreditsPage({
   setRequestLocale(locale);
 
   // Check if user has permission to edit posts
-  await requirePermission({
-    code: PERMISSIONS.USERS_WRITE,
+  await requireAllPermissions({
+    codes: [PERMISSIONS.USERS_WRITE, PERMISSIONS.CREDITS_WRITE],
     redirectUrl: '/admin/no-permission',
     locale,
   });
@@ -74,21 +74,22 @@ export default async function UserGrantCreditsPage({
         placeholder: t('grant_credits.fields.description_placeholder'),
       },
     ],
-    passby: {
-      user: user,
-    },
     data: user,
     submit: {
       button: {
         title: t('grant_credits.buttons.submit'),
       },
-      handler: async (data, passby) => {
+      handler: async (data) => {
         'use server';
 
-        const { user } = passby;
+        await requireAllPermissions({
+          codes: [PERMISSIONS.USERS_WRITE, PERMISSIONS.CREDITS_WRITE],
+          locale,
+        });
 
-        if (!user) {
-          throw new Error('no auth');
+        const targetUser = await findUserById(id);
+        if (!targetUser) {
+          throw new Error('user not found');
         }
 
         const credits = parseInt(data.get('credits') as string) || 0;
@@ -100,7 +101,7 @@ export default async function UserGrantCreditsPage({
         }
 
         await grantCreditsForUser({
-          user: user,
+          user: targetUser,
           credits: credits,
           validDays: validDays > 0 ? validDays : 0,
           description: description,
@@ -109,7 +110,7 @@ export default async function UserGrantCreditsPage({
         return {
           status: 'success',
           message: 'credits granted successfully',
-          redirect_url: `/admin/users?email=${user.email}`,
+          redirect_url: `/admin/users?email=${targetUser.email}`,
         };
       },
     },

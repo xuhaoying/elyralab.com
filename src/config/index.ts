@@ -51,6 +51,7 @@ export const envConfigs: ConfigMap = {
   auth_secret: process.env.AUTH_SECRET ?? '', // openssl rand -base64 32
   ai_notify_tokens: process.env.AI_NOTIFY_TOKENS ?? '',
   ai_dispatch_tokens: process.env.AI_DISPATCH_TOKENS ?? '',
+  cron_secret: process.env.CRON_SECRET ?? '',
   version: packageJson.version,
   locale_detect_enabled:
     process.env.NEXT_PUBLIC_LOCALE_DETECT_ENABLED ?? 'false',

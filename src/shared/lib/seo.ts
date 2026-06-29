@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { envConfigs } from '@/config';
-import { defaultLocale } from '@/config/locale';
+import { defaultLocale, locales } from '@/config/locale';
 
 // get metadata for page component
 export function getMetadata(
@@ -88,6 +88,7 @@ export function getMetadata(
         defaultMetadata.keywords,
       alternates: {
         canonical: canonicalUrl,
+        languages: getLanguageAlternates(options.canonicalUrl || ''),
       },
 
       openGraph: {
@@ -153,4 +154,28 @@ async function getCanonicalUrl(canonicalUrl: string, locale: string) {
   }
 
   return canonicalUrl;
+}
+
+export function getBaseUrl() {
+  return envConfigs.app_url.replace(/\/$/, '');
+}
+
+export function getLocalizedUrl(path: string, locale: string) {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  const localePrefix = locale === defaultLocale ? '' : `/${locale}`;
+
+  if (normalizedPath === '/') {
+    return `${getBaseUrl()}${localePrefix || '/'}`.replace(/\/$/, '') || getBaseUrl();
+  }
+
+  return `${getBaseUrl()}${localePrefix}${normalizedPath}`;
+}
+
+export function getLanguageAlternates(path: string) {
+  return {
+    ...Object.fromEntries(
+      locales.map((locale) => [locale, getLocalizedUrl(path || '/', locale)])
+    ),
+    'x-default': getLocalizedUrl(path || '/', defaultLocale),
+  };
 }

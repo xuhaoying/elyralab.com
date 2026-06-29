@@ -98,16 +98,18 @@ export default async function PostAddPage({
         title: t('fields.content'),
       },
     ],
-    passby: {
-      type: 'post',
-    },
     data: {},
     submit: {
       button: {
         title: t('add.buttons.submit'),
       },
-      handler: async (data, passby) => {
+      handler: async (data) => {
         'use server';
+
+        await requirePermission({
+          code: PERMISSIONS.POSTS_WRITE,
+          locale,
+        });
 
         const user = await getUserInfo();
         if (!user) {

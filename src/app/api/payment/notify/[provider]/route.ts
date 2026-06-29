@@ -8,6 +8,7 @@ import {
 } from '@/shared/models/order';
 import { findSubscriptionByProviderSubscriptionId } from '@/shared/models/subscription';
 import {
+  assertPaymentSessionMatchesOrder,
   getPaymentService,
   handleCheckoutSuccess,
   handleSubscriptionCanceled,
@@ -63,6 +64,12 @@ export async function POST(
       if (!order) {
         throw new Error('order not found');
       }
+
+      assertPaymentSessionMatchesOrder({
+        order,
+        session,
+        provider,
+      });
 
       await handleCheckoutSuccess({
         order,
@@ -171,6 +178,12 @@ export async function POST(
         if (!order) {
           throw new Error('order not found');
         }
+
+        assertPaymentSessionMatchesOrder({
+          order,
+          session,
+          provider,
+        });
 
         // handleCheckoutSuccess has idempotency check and optimistic lock
         await handleCheckoutSuccess({

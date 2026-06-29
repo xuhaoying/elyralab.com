@@ -1,9 +1,9 @@
 import moment from 'moment';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { notFound } from 'next/navigation';
 
 import { getThemePage } from '@/core/theme';
-import { envConfigs } from '@/config';
-import { Empty } from '@/shared/blocks/common';
+import { getLanguageAlternates, getLocalizedUrl } from '@/shared/lib/seo';
 import {
   PostType as DBPostType,
   getPosts,
@@ -29,15 +29,22 @@ export async function generateMetadata({
 }) {
   const { locale, slug } = await params;
   const t = await getTranslations('blog.metadata');
+  const categoryData = await findTaxonomy({
+    slug,
+    status: TaxonomyStatus.PUBLISHED,
+  });
+  if (!categoryData) {
+    notFound();
+  }
+
+  const canonicalPath = `/blog/category/${slug}`;
 
   return {
-    title: `${slug} | ${t('title')}`,
+    title: `${categoryData.title} | ${t('title')}`,
     description: t('description'),
     alternates: {
-      canonical:
-        locale !== envConfigs.locale
-          ? `${envConfigs.app_url}/${locale}/blog/category/${slug}`
-          : `${envConfigs.app_url}/blog/category/${slug}`,
+      canonical: getLocalizedUrl(canonicalPath, locale),
+      languages: getLanguageAlternates(canonicalPath),
     },
   };
 }
@@ -65,7 +72,7 @@ export default async function CategoryBlogPage({
     status: TaxonomyStatus.PUBLISHED,
   });
   if (!categoryData) {
-    return <Empty message={`category not found`} />;
+    notFound();
   }
 
   // get posts data

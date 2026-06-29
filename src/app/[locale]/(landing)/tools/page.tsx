@@ -1,4 +1,4 @@
-import { getAllTools, getToolsByCategory, toolCategories } from '@/lib/tools';
+import { getPublishedTools, getToolsByCategory, toolCategories } from '@/lib/tools';
 import { setRequestLocale } from 'next-intl/server';
 
 import { ToolCard, ToolHero } from '@/shared/components/tools';
@@ -29,15 +29,11 @@ export default async function ToolsPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const tools = getAllTools();
-  const availableCount = tools.filter(
-    (tool) => tool.status === 'available'
-  ).length;
+  const tools = getPublishedTools();
+  const availableCount = tools.length;
   const categorySummaries = toolCategories.map((category) => {
-    const categoryTools = getToolsByCategory(category);
-    const categoryAvailableCount = categoryTools.filter(
-      (tool) => tool.status === 'available'
-    ).length;
+    const categoryTools = getToolsByCategory(category, { publishedOnly: true });
+    const categoryAvailableCount = categoryTools.length;
 
     return {
       availableCount: categoryAvailableCount,
@@ -83,11 +79,11 @@ export default async function ToolsPage({
 
       <section className="container space-y-12 pb-16">
         {toolCategories.map((category) => {
-          const categoryTools = getToolsByCategory(category);
+          const categoryTools = getToolsByCategory(category, {
+            publishedOnly: true,
+          });
           const categoryId = getCategoryId(category);
-          const categoryAvailableCount = categoryTools.filter(
-            (tool) => tool.status === 'available'
-          ).length;
+          const categoryAvailableCount = categoryTools.length;
 
           if (categoryTools.length === 0) {
             return null;

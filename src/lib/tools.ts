@@ -290,12 +290,20 @@ export function getPublishedTools() {
   return tools.filter((tool) => tool.status === 'available');
 }
 
+export function getToolHref(slug: string) {
+  return `/tools/${slug}`;
+}
+
 export function getToolBySlug(slug: string) {
   return tools.find((tool) => tool.slug === slug);
 }
 
-export function getToolsByCategory(category: ToolCategory) {
-  return tools.filter((tool) => tool.category === category);
+export function getToolsByCategory(
+  category: ToolCategory,
+  options: { publishedOnly?: boolean } = {}
+) {
+  const source = options.publishedOnly ? getPublishedTools() : tools;
+  return source.filter((tool) => tool.category === category);
 }
 
 export function getToolAccessLabel(access: ToolAccess) {
@@ -310,15 +318,16 @@ export function getToolAccessLabel(access: ToolAccess) {
 
 export function getRelatedTools(slug: string, limit = 5) {
   const current = getToolBySlug(slug);
+  const publishedTools = getPublishedTools();
 
   if (!current) {
-    return tools.slice(0, limit);
+    return publishedTools.slice(0, limit);
   }
 
-  const sameCategory = tools.filter(
+  const sameCategory = publishedTools.filter(
     (tool) => tool.slug !== slug && tool.category === current.category
   );
-  const otherTools = tools.filter(
+  const otherTools = publishedTools.filter(
     (tool) => tool.slug !== slug && tool.category !== current.category
   );
 

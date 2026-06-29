@@ -81,11 +81,16 @@ export default async function SettingsPage({
     );
   }
 
-  const handleSubmit = async (data: FormData, passby: any) => {
+  const handleSubmit = async (data: FormData) => {
     'use server';
     const actionT = await getTranslations({
       locale,
       namespace: 'admin.settings',
+    });
+
+    await requireAllPermissions({
+      codes: [PERMISSIONS.SETTINGS_READ, PERMISSIONS.SETTINGS_WRITE],
+      locale,
     });
 
     const user = await getUserInfo();
@@ -94,13 +99,13 @@ export default async function SettingsPage({
       throw new Error(actionT('edit.messages.no_auth'));
     }
 
+    const freshConfigs = await getConfigs();
     data.forEach((value, name) => {
-      configs[name] = value as string;
+      freshConfigs[name] = value as string;
     });
 
     if (
-      passby?.provider === 'domestic_card_payment' &&
-      configs.domestic_card_payment_enabled === 'true'
+      freshConfigs.domestic_card_payment_enabled === 'true'
     ) {
       const requiredProductIds = [
         'credits-package',
@@ -111,17 +116,17 @@ export default async function SettingsPage({
         .map((productId) =>
           getDomesticCardConfigKey(
             productId,
-            getDomesticCardEnvironment(configs)
+            getDomesticCardEnvironment(freshConfigs)
           )
         )
-        .filter((key) => !String(configs[key] || '').trim());
+        .filter((key) => !String(freshConfigs[key] || '').trim());
 
       if (missingFields.length > 0) {
         throw new Error(actionT('payment.messages.domestic_card_links_required'));
       }
     }
 
-    await saveConfigs(configs);
+    await saveConfigs(freshConfigs);
 
     return {
       status: actionT('edit.messages.success'),
@@ -154,10 +159,6 @@ export default async function SettingsPage({
           validation: setting.validation,
           metadata: setting.metadata,
         })),
-      passby: {
-        provider: group.name,
-        tab: group.tab,
-      },
       data: configs,
       submit: {
         button: {

@@ -68,14 +68,18 @@ export default async function ShowcaseEditPage({
         value: showcase.tags || '',
       },
     ],
-    passby: { id },
     data: {},
     submit: {
       button: {
         title: 'Submit',
       },
-      handler: async (data, passby) => {
+      handler: async (data) => {
         'use server';
+
+        await requireAnyPermission({
+          codes: SHOWCASE_WRITE_PERMISSION_CODES,
+          locale,
+        });
 
         const user = await getUserInfo();
         if (!user) {
@@ -91,9 +95,14 @@ export default async function ShowcaseEditPage({
           throw new Error('title and image are required');
         }
 
-        const result = await updateShowcase(passby.id, {
+        const currentShowcase = await getShowcase(id);
+        if (!currentShowcase) {
+          throw new Error('showcase not found');
+        }
+
+        const result = await updateShowcase(id, {
           title: title.trim(),
-          description: showcase.description,
+          description: currentShowcase.description,
           prompt: prompt?.trim() || null,
           image: image.trim(),
           tags: tags?.trim() || null,

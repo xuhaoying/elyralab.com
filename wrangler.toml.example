@@ -35,3 +35,8 @@ DB_MAX_CONNECTIONS = "1"
 # auth secret
 # openssl rand -base64 32
 AUTH_SECRET = ""
+
+# internal AI task dispatch
+# openssl rand -base64 32
+AI_DISPATCH_TOKENS = ""
+CRON_SECRET = ""

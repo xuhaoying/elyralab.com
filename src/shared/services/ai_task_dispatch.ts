@@ -40,7 +40,9 @@ function parseNotifyTokens() {
 }
 
 function parseDispatchTokens() {
-  return String(envConfigs.ai_dispatch_tokens || '')
+  return [envConfigs.ai_dispatch_tokens, envConfigs.cron_secret]
+    .filter(Boolean)
+    .join(',')
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean);
@@ -809,6 +811,10 @@ export async function triggerQueuedImageDispatch(limit = DEFAULT_DISPATCH_LIMIT)
   const appUrl = String(envConfigs.app_url || '').trim();
 
   if (!dispatchToken || !appUrl || !/^https?:\/\//i.test(appUrl)) {
+    logAITaskEvent('dispatch_trigger_skipped', {
+      reason: !dispatchToken ? 'missing_token' : 'invalid_app_url',
+      hasAppUrl: Boolean(appUrl),
+    });
     return false;
   }
 

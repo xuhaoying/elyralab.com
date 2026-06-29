@@ -2,6 +2,7 @@ import { drizzle } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2';
 
 import { envConfigs } from '@/config';
+import { getCloudflareEnv } from '@/shared/lib/cloudflare';
 import { isCloudflareWorker } from '@/shared/lib/env';
 
 // Global database connection instance (singleton pattern)
@@ -14,12 +15,12 @@ export function getMysqlDb() {
   let isHyperdrive = false;
 
   if (isCloudflareWorker) {
-    const { env }: { env: any } = { env: {} };
+    const env = getCloudflareEnv();
     // Detect if set Hyperdrive
-    isHyperdrive = 'HYPERDRIVE' in env;
+    isHyperdrive = !!env?.HYPERDRIVE?.connectionString;
 
     if (isHyperdrive) {
-      const hyperdrive = env.HYPERDRIVE;
+      const hyperdrive = env?.HYPERDRIVE;
       databaseUrl = hyperdrive.connectionString;
       console.log('using Hyperdrive connection');
     }

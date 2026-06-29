@@ -96,6 +96,16 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
       ...current,
       [field]: value,
     }));
+    setFieldErrors((current) => {
+      if (!current[field]) {
+        return current;
+      }
+
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+    setFormError('');
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -166,7 +176,7 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="space-y-8" onSubmit={handleSubmit}>
+          <form className="space-y-8" onSubmit={handleSubmit} noValidate>
             {formError ? (
               <div
                 role="alert"
@@ -227,10 +237,7 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
                   </Label>
                   <Input
                     id="true-rent-leaseLengthMonths"
-                    type="number"
-                    min="1"
-                    max="120"
-                    step="1"
+                    type="text"
                     inputMode="numeric"
                     value={form.leaseLengthMonths}
                     onChange={(event) =>

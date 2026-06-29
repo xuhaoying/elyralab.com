@@ -63,24 +63,25 @@ export default async function CategoryEditPage({
         title: t('fields.description'),
       },
     ],
-    passby: {
-      type: 'category',
-      category: category,
-    },
     data: category,
     submit: {
       button: {
         title: t('edit.buttons.submit'),
       },
-      handler: async (data, passby) => {
+      handler: async (data) => {
         'use server';
+
+        await requirePermission({
+          code: PERMISSIONS.CATEGORIES_WRITE,
+          locale,
+        });
 
         const user = await getUserInfo();
         if (!user) {
           throw new Error('no auth');
         }
 
-        const { category } = passby;
+        const category = await findTaxonomy({ id });
         if (!user || !category) {
           throw new Error('access denied');
         }

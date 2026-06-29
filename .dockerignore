@@ -5,6 +5,7 @@
 data
 debug
 node_modules
+.source
 .cursorrules
 .git
 vercel.json

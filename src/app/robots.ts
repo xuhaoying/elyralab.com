@@ -1,6 +1,24 @@
 import { MetadataRoute } from 'next';
 
 import { envConfigs } from '@/config';
+import { defaultLocale, locales } from '@/config/locale';
+
+const privatePaths = [
+  '/privacy-policy',
+  '/terms-of-service',
+  '/settings/*',
+  '/activity/*',
+  '/admin/*',
+];
+
+function localizedDisallowPaths() {
+  return privatePaths.flatMap((path) => [
+    path,
+    ...locales
+      .filter((locale) => locale !== defaultLocale)
+      .map((locale) => `/${locale}${path}`),
+  ]);
+}
 
 export default function robots(): MetadataRoute.Robots {
   const appUrl = envConfigs.app_url;
@@ -11,15 +29,10 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: [
         '/*?*q=',
-        '/privacy-policy',
-        '/terms-of-service',
-        '/settings/*',
-        '/activity/*',
-        '/admin/*',
+        ...localizedDisallowPaths(),
         '/api/*',
       ],
     },
     sitemap: `${appUrl}/sitemap.xml`,
   };
 }
-

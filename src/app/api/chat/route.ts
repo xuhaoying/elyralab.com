@@ -120,7 +120,7 @@ export async function POST(req: Request) {
 
     const result = streamText({
       model: openrouter.chat(model),
-      messages: convertToModelMessages(validatedMessages),
+      messages: await convertToModelMessages(validatedMessages),
     });
 
     // send sources and reasoning back to the client

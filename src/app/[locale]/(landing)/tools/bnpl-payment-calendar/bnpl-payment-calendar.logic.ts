@@ -272,7 +272,7 @@ export function buildAmountPerPaymentLabel(amounts: number[]) {
 
 function normalizeToday(today: Date) {
   return new Date(
-    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())
+    Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())
   );
 }
 
@@ -452,7 +452,10 @@ export function checklistText(result: PaymentScheduleResult) {
 }
 
 function csvEscape(value: string | number) {
-  const stringValue = String(value);
+  let stringValue = String(value);
+  if (/^[=+\-@]/.test(stringValue)) {
+    stringValue = `'${stringValue}`;
+  }
 
   if (/[",\n]/.test(stringValue)) {
     return `"${stringValue.replaceAll('"', '""')}"`;

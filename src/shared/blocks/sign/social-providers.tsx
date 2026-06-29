@@ -10,7 +10,6 @@ import { defaultLocale } from '@/config/locale';
 import { Button } from '@/shared/components/ui/button';
 import { useAppContext } from '@/shared/contexts/app';
 import { cn } from '@/shared/lib/utils';
-import { Button as ButtonType } from '@/shared/types/blocks/common';
 
 export function SocialProviders({
   configs,
@@ -122,14 +121,17 @@ export function SocialProviders({
     }, 500);
   };
 
-  const providers: ButtonType[] = [];
+  const providers: Array<{
+    name: string;
+    title: string;
+    icon: React.ReactNode;
+  }> = [];
 
   if (configs.google_auth_enabled === 'true') {
     providers.push({
       name: 'google',
       title: t('google_sign_in_title'),
       icon: <RiGoogleFill />,
-      onClick: () => handleSignIn({ provider: 'google' }),
     });
   }
 
@@ -138,7 +140,6 @@ export function SocialProviders({
       name: 'github',
       title: t('github_sign_in_title'),
       icon: <RiGithubFill />,
-      onClick: () => handleSignIn({ provider: 'github' }),
     });
   }
 
@@ -156,7 +157,7 @@ export function SocialProviders({
           variant="outline"
           className={cn('w-full gap-2')}
           disabled={loading}
-          onClick={provider.onClick}
+          onClick={() => handleSignIn({ provider: provider.name })}
         >
           {provider.icon}
           <h3>{provider.title}</h3>

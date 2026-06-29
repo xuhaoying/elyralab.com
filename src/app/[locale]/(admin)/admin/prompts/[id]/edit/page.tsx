@@ -60,23 +60,25 @@ export default async function PromptEditPage({
         title: t('fields.prompt_description'),
       },
     ],
-    passby: {
-      prompt: promptData,
-    },
     data: promptData,
     submit: {
       button: {
         title: 'Update',
       },
-      handler: async (data, passby) => {
+      handler: async (data) => {
         'use server';
+
+        await requireAnyPermission({
+          codes: PROMPT_WRITE_PERMISSION_CODES,
+          locale,
+        });
 
         const user = await getUserInfo();
         if (!user) {
           throw new Error('no auth');
         }
 
-        const { prompt } = passby;
+        const prompt = await findPrompt({ id });
         if (!user || !prompt) {
           throw new Error('access denied');
         }

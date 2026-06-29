@@ -6,6 +6,7 @@ import {
   mysqlTable,
   text,
   timestamp,
+  uniqueIndex,
   varchar,
 } from 'drizzle-orm/mysql-core';
 
@@ -223,7 +224,7 @@ export const order = table(
     ),
     // Composite: Prevent duplicate payments
     // Can also be used for: WHERE transactionId = ? (left-prefix)
-    index('idx_order_transaction_provider').on(
+    uniqueIndex('idx_order_transaction_provider').on(
       table.transactionId,
       table.paymentProvider
     ),
@@ -279,7 +280,7 @@ export const subscription = table(
     ),
     // Composite: Prevent duplicate subscriptions
     // Can also be used for: WHERE paymentProvider = ? (left-prefix)
-    index('idx_subscription_provider_id').on(
+    uniqueIndex('idx_subscription_provider_id').on(
       table.subscriptionId,
       table.paymentProvider
     ),

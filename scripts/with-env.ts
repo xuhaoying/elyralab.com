@@ -15,7 +15,7 @@
  *
  * Priority: --env argument > ENV_FILE env var > .env.{NODE_ENV} > .env.development (default)
  */
-import { execSync } from 'child_process';
+import { spawnSync } from 'child_process';
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -67,16 +67,18 @@ if (args.length === 0) {
   process.exit(1);
 }
 
-const command = args.join(' ');
-
 console.log(`📄 Loading environment from: ${envFile}`);
-console.log(`▶️  Executing: ${command}\n`);
+console.log(`▶️  Executing: ${args.join(' ')}\n`);
 
-try {
-  execSync(`dotenv -e ${envFile} -- ${command}`, {
-    stdio: 'inherit',
-    cwd: process.cwd(),
-  });
-} catch (error) {
+const result = spawnSync('dotenv', ['-e', envFile, '--', ...args], {
+  stdio: 'inherit',
+  cwd: process.cwd(),
+  shell: false,
+});
+
+if (result.error) {
+  console.error(result.error.message);
   process.exit(1);
 }
+
+process.exit(result.status ?? 1);

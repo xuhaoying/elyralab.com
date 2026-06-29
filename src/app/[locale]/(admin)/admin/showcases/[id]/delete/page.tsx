@@ -44,6 +44,11 @@ export default async function ShowcaseDeletePage({
   const confirmDelete = async () => {
     'use server';
 
+    await requireAnyPermission({
+      codes: SHOWCASE_DELETE_PERMISSION_CODES,
+      locale,
+    });
+
     const authUser = await getUserInfo();
     if (!authUser) {
       redirect('/sign-in');

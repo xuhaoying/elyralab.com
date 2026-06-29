@@ -9,6 +9,8 @@ import {
 } from 'fumadocs-ui/page';
 
 import { source } from '@/core/docs/source';
+import { defaultLocale } from '@/config/locale';
+import { getLanguageAlternates, getLocalizedUrl } from '@/shared/lib/seo';
 
 export const revalidate = 86400;
 export const dynamic = 'force-static';
@@ -56,9 +58,15 @@ export async function generateMetadata(props: {
   const params = await props.params;
   const page = source.getPage(params.slug, params.locale);
   if (!page) notFound();
+  const path = params.slug?.length ? `/docs/${params.slug.join('/')}` : '/docs';
+  const locale = params.locale || defaultLocale;
 
   return {
     title: page.data.title,
     description: page.data.description,
+    alternates: {
+      canonical: getLocalizedUrl(path, locale),
+      languages: getLanguageAlternates(path),
+    },
   };
 }

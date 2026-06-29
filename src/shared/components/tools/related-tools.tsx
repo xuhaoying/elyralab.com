@@ -3,16 +3,12 @@
 import { ArrowRight } from 'lucide-react';
 
 import { trackToolEvent } from '@/lib/analytics';
-import { ToolDefinition } from '@/lib/tools';
+import { getToolAccessLabel, ToolDefinition } from '@/lib/tools';
 import { Link } from '@/core/i18n/navigation';
 import { Badge } from '@/shared/components/ui/badge';
 import { Card, CardContent } from '@/shared/components/ui/card';
 
 import { ToolIcon } from './tool-icon';
-
-function getRelatedHref(tool: ToolDefinition) {
-  return tool.status === 'available' ? tool.href : '/tools';
-}
 
 export function RelatedTools({
   currentSlug,
@@ -41,7 +37,7 @@ export function RelatedTools({
           <Card key={tool.slug} className="rounded-lg py-0 shadow-none">
             <CardContent className="p-4">
               <Link
-                href={getRelatedHref(tool)}
+                href={tool.href}
                 className="group grid grid-cols-[auto_1fr_auto] items-start gap-3"
                 onClick={() =>
                   trackToolEvent('related_tool_click', {
@@ -59,9 +55,7 @@ export function RelatedTools({
                   <span className="text-muted-foreground line-clamp-2 block text-xs leading-5">
                     {tool.description}
                   </span>
-                  {tool.status === 'planned' ? (
-                    <Badge variant="outline">Planned</Badge>
-                  ) : null}
+                  <Badge variant="outline">{getToolAccessLabel(tool.access)}</Badge>
                 </span>
                 <ArrowRight className="text-muted-foreground size-4 transition-transform group-hover:translate-x-0.5" />
               </Link>

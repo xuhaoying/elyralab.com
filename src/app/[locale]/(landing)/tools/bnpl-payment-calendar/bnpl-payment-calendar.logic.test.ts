@@ -198,3 +198,41 @@ test('checklistText and scheduleCsv include merchant and escaped notes', () => {
   assert.match(csv, /Monthly cash flow/);
   assert.match(csv, /Cash flow notes/);
 });
+
+test('scheduleCsv prefixes spreadsheet formula-like cells', () => {
+  const result = buildSchedule(
+    {
+      ...emptyForm,
+      purchaseAmount: '120',
+      firstPaymentDate: '2026-04-10',
+      numberOfPayments: '2',
+      paymentFrequency: 'weekly',
+      merchantName: '=HYPERLINK("https://example.com","Store")',
+      note: '@pay later',
+    },
+    new Date(2026, 3, 1)
+  );
+
+  assert.ok(result);
+
+  const csv = scheduleCsv(result);
+  assert.match(csv, /"'=HYPERLINK\(""https:\/\/example\.com"",""Store""\)"/);
+  assert.match(csv, /'@pay later/);
+});
+
+test('buildSchedule compares next payments using the local calendar day', () => {
+  const result = buildSchedule(
+    {
+      ...emptyForm,
+      purchaseAmount: '100',
+      firstPaymentDate: '2026-01-01',
+      numberOfPayments: '2',
+      paymentFrequency: 'weekly',
+    },
+    new Date(2026, 0, 1, 23, 30)
+  );
+
+  assert.ok(result);
+  assert.equal(result.missedPayments.length, 0);
+  assert.equal(result.nextPayments.length, 2);
+});

@@ -343,6 +343,9 @@ export function GmailSearchQueryGenerator({ toolSlug }: { toolSlug: string }) {
                     updateField('afterDate', event.target.value)
                   }
                   aria-invalid={Boolean(validationMessage)}
+                  aria-describedby={
+                    validationMessage ? 'gmail-date-error' : undefined
+                  }
                 />
               </div>
 
@@ -356,12 +359,16 @@ export function GmailSearchQueryGenerator({ toolSlug }: { toolSlug: string }) {
                     updateField('beforeDate', event.target.value)
                   }
                   aria-invalid={Boolean(validationMessage)}
+                  aria-describedby={
+                    validationMessage ? 'gmail-date-error' : undefined
+                  }
                 />
               </div>
             </div>
 
             {validationMessage ? (
               <div
+                id="gmail-date-error"
                 className="border-destructive/30 bg-destructive/5 text-destructive rounded-md border p-3 text-sm leading-6"
                 role="alert"
               >

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Check, Copy } from 'lucide-react';
 
 import { trackToolEvent } from '@/lib/analytics';
+import type { AnalyticsProperties } from '@/lib/analytics';
 import { Button } from '@/shared/components/ui/button';
 
 function fallbackCopy(text: string) {
@@ -14,8 +15,9 @@ function fallbackCopy(text: string) {
   textarea.style.top = '-9999px';
   document.body.appendChild(textarea);
   textarea.select();
-  document.execCommand('copy');
+  const copied = document.execCommand('copy');
   document.body.removeChild(textarea);
+  return copied;
 }
 
 export function CopyButton({
@@ -24,32 +26,49 @@ export function CopyButton({
   disabled,
   label = 'Copy',
   copiedLabel = 'Copied',
+  analyticsProperties,
 }: {
   text: string;
   toolSlug: string;
   disabled?: boolean;
   label?: string;
   copiedLabel?: string;
+  analyticsProperties?: AnalyticsProperties;
 }) {
   const [copied, setCopied] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   async function handleCopy() {
     if (!text) {
       return;
     }
 
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(text);
-    } else {
-      fallbackCopy(text);
-    }
+    try {
+      if (navigator.clipboard?.writeText) {
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch {
+          if (!fallbackCopy(text)) {
+            throw new Error('Copy failed');
+          }
+        }
+      } else if (!fallbackCopy(text)) {
+        throw new Error('Copy failed');
+      }
 
-    trackToolEvent('copy_result', {
-      tool_slug: toolSlug,
-      character_count: text.length,
-    });
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1600);
+      trackToolEvent('copy_result', {
+        tool_slug: toolSlug,
+        character_count: text.length,
+        ...analyticsProperties,
+      });
+      setFailed(false);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setCopied(false);
+      setFailed(true);
+      window.setTimeout(() => setFailed(false), 2000);
+    }
   }
 
   return (
@@ -58,10 +77,16 @@ export function CopyButton({
       variant="outline"
       onClick={handleCopy}
       disabled={disabled || !text}
-      aria-label={copied ? `${copiedLabel} result` : `${label} result`}
+      aria-label={
+        failed
+          ? 'Copy failed'
+          : copied
+            ? `${copiedLabel} result`
+            : `${label} result`
+      }
     >
       {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-      <span>{copied ? copiedLabel : label}</span>
+      <span>{failed ? 'Copy failed' : copied ? copiedLabel : label}</span>
     </Button>
   );
 }

@@ -72,9 +72,6 @@ export default async function UserEditRolesPage({
         validation: { required: true },
       },
     ],
-    passby: {
-      user,
-    },
     data: {
       ...user,
       roles: userRoleIds,
@@ -83,14 +80,13 @@ export default async function UserEditRolesPage({
       button: {
         title: t('edit_roles.buttons.submit'),
       },
-      handler: async (data, passby) => {
+      handler: async (data) => {
         'use server';
 
-        const { user } = passby;
-
-        if (!user) {
-          throw new Error('no auth');
-        }
+        await requireAllPermissions({
+          codes: [PERMISSIONS.USERS_WRITE, PERMISSIONS.ROLES_WRITE],
+          locale,
+        });
 
         let roles = data.get('roles') as unknown as string[];
         if (typeof roles === 'string') {
@@ -101,7 +97,12 @@ export default async function UserEditRolesPage({
           }
         }
 
-        await assignRolesToUser(user.id as string, roles);
+        const targetUser = await findUserById(id);
+        if (!targetUser) {
+          throw new Error('user not found');
+        }
+
+        await assignRolesToUser(targetUser.id as string, roles);
 
         return {
           status: 'success',

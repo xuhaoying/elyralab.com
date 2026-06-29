@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
-import { db } from '@/core/db';
-import { prompt } from '@/config/db/schema';
+
+import { findPublishedPromptByPromptTitle } from '@/shared/models/prompt';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,13 +14,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const result = await db()
-      .select()
-      .from(prompt)
-      .where(eq(prompt.promptTitle, title))
-      .limit(1);
+    const result = await findPublishedPromptByPromptTitle(title);
 
-    if (!result || result.length === 0) {
+    if (!result) {
       return NextResponse.json(
         { error: 'Prompt not found' },
         { status: 404 }
@@ -30,7 +25,14 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: result[0],
+      data: {
+        id: result.id,
+        title: result.title,
+        description: result.description,
+        image: result.image,
+        promptTitle: result.promptTitle,
+        promptDescription: result.promptDescription,
+      },
     });
   } catch (error) {
     console.error('Get prompt by title error:', error);

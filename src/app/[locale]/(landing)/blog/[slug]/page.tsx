@@ -1,8 +1,8 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { notFound } from 'next/navigation';
 
 import { getThemePage } from '@/core/theme';
-import { envConfigs } from '@/config';
-import { Empty } from '@/shared/blocks/common';
+import { getLanguageAlternates, getLocalizedUrl } from '@/shared/lib/seo';
 import { getPost } from '@/shared/models/post';
 import { DynamicPage } from '@/shared/types/blocks/landing';
 
@@ -13,28 +13,19 @@ export async function generateMetadata({
 }) {
   const { locale, slug } = await params;
   const t = await getTranslations('blog.metadata');
-
-  const canonicalUrl =
-    locale !== envConfigs.locale
-      ? `${envConfigs.app_url}/${locale}/blog/${slug}`
-      : `${envConfigs.app_url}/blog/${slug}`;
+  const canonicalPath = `/blog/${slug}`;
 
   const post = await getPost({ slug, locale });
   if (!post) {
-    return {
-      title: `${slug} | ${t('title')}`,
-      description: t('description'),
-      alternates: {
-        canonical: canonicalUrl,
-      },
-    };
+    notFound();
   }
 
   return {
     title: `${post.title} | ${t('title')}`,
     description: post.description,
     alternates: {
-      canonical: canonicalUrl,
+      canonical: getLocalizedUrl(canonicalPath, locale),
+      languages: getLanguageAlternates(canonicalPath),
     },
   };
 }
@@ -50,7 +41,7 @@ export default async function BlogDetailPage({
   const post = await getPost({ slug, locale });
 
   if (!post) {
-    return <Empty message={`Post not found`} />;
+    notFound();
   }
 
   // build page sections

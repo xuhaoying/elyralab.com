@@ -59,14 +59,18 @@ export default async function ShowcaseAddPage({
         tip: 'Use comma to separate multiple tags',
       },
     ],
-    passby: {},
     data: {},
     submit: {
       button: {
         title: 'Submit',
       },
-      handler: async (data, passby) => {
+      handler: async (data) => {
         'use server';
+
+        await requireAnyPermission({
+          codes: SHOWCASE_WRITE_PERMISSION_CODES,
+          locale,
+        });
 
         const user = await getUserInfo();
         if (!user) {

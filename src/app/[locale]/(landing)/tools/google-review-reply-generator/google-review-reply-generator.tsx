@@ -330,16 +330,19 @@ export function GoogleReviewReplyGenerator({ toolSlug }: { toolSlug: string }) {
               <div className="grid gap-4">
                 <ReplyCard
                   title="Professional reply"
+                  variant="professional"
                   text={result.professionalReply}
                   toolSlug={toolSlug}
                 />
                 <ReplyCard
                   title="Short reply"
+                  variant="short"
                   text={result.shortReply}
                   toolSlug={toolSlug}
                 />
                 <ReplyCard
                   title="Warmer reply"
+                  variant="warmer"
                   text={result.warmerReply}
                   toolSlug={toolSlug}
                 />
@@ -358,10 +361,12 @@ export function GoogleReviewReplyGenerator({ toolSlug }: { toolSlug: string }) {
 
 function ReplyCard({
   title,
+  variant,
   text,
   toolSlug,
 }: {
   title: string;
+  variant: string;
   text: string;
   toolSlug: string;
 }) {
@@ -373,7 +378,12 @@ function ReplyCard({
         <h3 id={headingId} className="text-sm font-semibold">
           {title}
         </h3>
-        <CopyButton text={text} toolSlug={toolSlug} label={`Copy ${title}`} />
+        <CopyButton
+          text={text}
+          toolSlug={toolSlug}
+          label={`Copy ${title}`}
+          analyticsProperties={{ reply_variant: variant }}
+        />
       </div>
       <p className="text-muted-foreground mt-3 text-sm leading-6 whitespace-pre-wrap">
         {text}

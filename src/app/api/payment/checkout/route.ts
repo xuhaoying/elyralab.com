@@ -20,6 +20,41 @@ import { getUserInfo } from '@/shared/models/user';
 import { getPaymentService } from '@/shared/services/payment';
 import { PricingCurrency } from '@/shared/types/blocks/pricing';
 
+const RESERVED_PAYMENT_METADATA_KEYS = new Set([
+  'app_name',
+  'order_no',
+  'user_id',
+  'product_id',
+  'amount',
+  'currency',
+  'payment_provider',
+  'payment_type',
+]);
+
+function normalizeCheckoutMetadata(metadata: unknown) {
+  if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) {
+    return {};
+  }
+
+  const result: Record<string, string> = {};
+  for (const [key, value] of Object.entries(metadata)) {
+    const normalizedKey = key.trim();
+    if (!normalizedKey) continue;
+    if (RESERVED_PAYMENT_METADATA_KEYS.has(normalizedKey)) {
+      throw new Error(`metadata key "${normalizedKey}" is reserved`);
+    }
+    if (
+      typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean'
+    ) {
+      result[normalizedKey] = String(value).slice(0, 500);
+    }
+  }
+
+  return result;
+}
+
 export async function POST(req: Request) {
   try {
     const { product_id, currency, locale, payment_provider, metadata } =
@@ -206,6 +241,7 @@ export async function POST(req: Request) {
       orderNo,
       userId: user.id,
     });
+    const safeMetadata = normalizeCheckoutMetadata(metadata);
 
     // build checkout order
     const checkoutOrder: PaymentOrder = {
@@ -216,10 +252,15 @@ export async function POST(req: Request) {
       },
       type: paymentType,
       metadata: {
+        ...safeMetadata,
         app_name: configs.app_name,
         order_no: orderNo,
         user_id: user.id,
-        ...(metadata || {}),
+        product_id: pricingItem.product_id,
+        amount: checkoutAmount,
+        currency: checkoutCurrency,
+        payment_provider: paymentProvider.name,
+        payment_type: paymentType,
       },
       successUrl: `${configs.app_url}/api/payment/callback?order_no=${orderNo}&token=${paymentCallbackToken}`,
       cancelUrl: `${callbackBaseUrl}/pricing`,

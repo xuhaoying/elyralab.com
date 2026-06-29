@@ -1,8 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
+
+import {
+  getSafeImageExtension,
+  validateImageUploadBody,
+  validateImageUploadMetadata,
+} from '@/shared/lib/upload-security';
+import { getUserInfo } from '@/shared/models/user';
 import { getStorageService } from '@/shared/services/storage';
 
 export async function POST(request: NextRequest) {
   try {
+    const user = await getUserInfo();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
 
@@ -13,22 +25,40 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const metadataValidation = validateImageUploadMetadata(file);
+    if (!metadataValidation.ok) {
+      return NextResponse.json(
+        { error: metadataValidation.error },
+        { status: 415 }
+      );
+    }
+
     const storageService = await getStorageService();
 
     const now = new Date();
     const dateFolder = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substring(2, 8);
-    const ext = file.name.split('.').pop();
+    const ext = getSafeImageExtension(metadataValidation.mimeType);
     const key = `${dateFolder}/${timestamp}-${randomStr}.${ext}`;
 
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const buffer = new Uint8Array(arrayBuffer);
+    const bodyValidation = validateImageUploadBody(
+      buffer,
+      metadataValidation.mimeType
+    );
+    if (!bodyValidation.ok) {
+      return NextResponse.json(
+        { error: bodyValidation.error },
+        { status: 415 }
+      );
+    }
 
     const result = await storageService.uploadFile({
       body: buffer,
       key,
-      contentType: file.type,
+      contentType: metadataValidation.mimeType,
       disposition: 'inline',
     });
 
