@@ -148,6 +148,7 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
       readiness_level: nextResult.level,
       strength_count: nextResult.strengths.length,
       missing_count: nextResult.missingItems.length,
+      top_priority_count: nextResult.topPriorities.length,
       has_schema: form.hasStructuredData,
       has_llms_txt: form.hasLlmsTxt,
     });
@@ -363,6 +364,44 @@ export function AISearchReadinessChecker({ toolSlug }: { toolSlug: string }) {
                 value={String(result.priorityChecklist.length)}
               />
             </div>
+
+            <section className="rounded-md border p-4">
+              <h3 className="text-sm font-semibold">Executive summary</h3>
+              <p className="text-muted-foreground mt-3 text-sm leading-6">
+                {result.summary}
+              </p>
+              <p className="text-muted-foreground mt-3 text-sm leading-6">
+                {result.scoreBandAction}
+              </p>
+            </section>
+
+            <section className="rounded-md border p-4">
+              <h3 className="text-sm font-semibold">Top priority actions</h3>
+              {result.topPriorities.length > 0 ? (
+                <div className="mt-3 grid gap-3">
+                  {result.topPriorities.map((item, index) => (
+                    <div key={item.title} className="rounded-md border p-3">
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                        <h4 className="text-sm font-medium">
+                          {index + 1}. {item.title}
+                        </h4>
+                        <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                          {item.impact} impact
+                        </span>
+                      </div>
+                      <p className="text-muted-foreground mt-2 text-sm leading-6">
+                        {item.why}
+                      </p>
+                      <p className="mt-2 text-sm leading-6">{item.action}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground mt-3 text-sm leading-6">
+                  Keep the strongest pages current and add new proof points.
+                </p>
+              )}
+            </section>
 
             <ResultList
               title="Strengths"

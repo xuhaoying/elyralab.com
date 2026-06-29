@@ -33,12 +33,21 @@ export interface AssessmentItem {
   answer: TernaryAnswer;
 }
 
+export interface PriorityAction {
+  title: string;
+  impact: 'High' | 'Medium';
+  why: string;
+  action: string;
+}
+
 export interface ReadinessResult {
   score: number;
   level: string;
   strengths: string[];
   missingItems: string[];
   priorityChecklist: string[];
+  topPriorities: PriorityAction[];
+  scoreBandAction: string;
   recommendations: string[];
   summary: string;
   items: AssessmentItem[];
@@ -263,11 +272,43 @@ export function getReadinessLevel(score: number) {
   return 'Needs foundation work';
 }
 
+export function getScoreBandAction(score: number) {
+  if (score >= 80) {
+    return 'Defend the lead: keep entity pages current, add fresh proof points, and monitor how AI search tools describe the brand.';
+  }
+
+  if (score >= 60) {
+    return 'Close the highest-weight gaps first, then add distinctive proof that AI systems can cite instead of generic category language.';
+  }
+
+  if (score >= 40) {
+    return 'Build the crawlable foundation before chasing advanced tactics: product pages, ownership signals, FAQ content, and schema.';
+  }
+
+  return 'Start with foundations: make the offer, audience, ownership, and core pages clear before spending time on advanced AI-search tactics.';
+}
+
 export function buildItems(form: FormState) {
   return assessmentConfig.map((item) => ({
     ...item,
     answer: form[item.key],
   }));
+}
+
+export function buildTopPriorities(items: AssessmentItem[]) {
+  return items
+    .filter((item) => item.answer !== 'yes')
+    .sort((a, b) => b.weight - a.weight)
+    .slice(0, 3)
+    .map((item) => ({
+      title:
+        item.answer === 'unknown'
+          ? `Verify ${item.label.toLowerCase()}`
+          : `Improve ${item.label.toLowerCase()}`,
+      impact: item.weight >= 14 ? 'High' : 'Medium',
+      why: item.description,
+      action: item.recommendation,
+    })) satisfies PriorityAction[];
 }
 
 export function buildResult(form: FormState): ReadinessResult {
@@ -301,8 +342,16 @@ export function buildResult(form: FormState): ReadinessResult {
     .slice(0, 5)
     .map((item) => item.recommendation);
   const level = getReadinessLevel(score);
+  const topPriorities = buildTopPriorities(items);
+  const scoreBandAction = getScoreBandAction(score);
   const unknownCount = items.filter((item) => item.answer === 'unknown').length;
-  const summary = `${normalized.brandName} scores ${score}/100 for AI search readiness. The current level is ${level.toLowerCase()}. The strongest path forward is to make the site easier for AI systems to understand, cite, and connect to ${normalized.targetAudience}.${unknownCount > 0 ? ` ${unknownCount} item${unknownCount === 1 ? '' : 's'} should be verified because unknown answers receive partial credit only.` : ''}`;
+  const prioritySummary =
+    topPriorities.length > 0
+      ? ` Start with ${topPriorities
+          .map((item) => item.title.toLowerCase())
+          .join(', ')}.`
+      : ' Keep refreshing proof points and monitor brand answers over time.';
+  const summary = `${normalized.brandName} scores ${score}/100 for AI search readiness. The current level is ${level.toLowerCase()}. The strongest path forward is to make the site easier for AI systems to understand, cite, and connect to ${normalized.targetAudience}.${prioritySummary}${unknownCount > 0 ? ` ${unknownCount} item${unknownCount === 1 ? '' : 's'} should be verified because unknown answers receive partial credit only.` : ''}`;
 
   return {
     score,
@@ -310,6 +359,8 @@ export function buildResult(form: FormState): ReadinessResult {
     strengths,
     missingItems,
     priorityChecklist,
+    topPriorities,
+    scoreBandAction,
     recommendations,
     summary,
     items,
@@ -330,6 +381,9 @@ export function resultText(form: FormState, result: ReadinessResult) {
     'Summary:',
     result.summary,
     '',
+    'Score-band strategy:',
+    result.scoreBandAction,
+    '',
     'Strengths:',
     ...(result.strengths.length > 0
       ? result.strengths.map((item) => `- ${item}`)
@@ -346,6 +400,14 @@ export function resultText(form: FormState, result: ReadinessResult) {
       : [
           '[ ] Maintain current AI-search foundations and refresh content regularly.',
         ]),
+    '',
+    'Top 3 priority actions:',
+    ...(result.topPriorities.length > 0
+      ? result.topPriorities.map(
+          (item, index) =>
+            `${index + 1}. ${item.title} (${item.impact} impact): ${item.action}`
+        )
+      : ['1. Keep the strongest pages current and add new proof points.']),
     '',
     'Next-step recommendations:',
     ...(result.recommendations.length > 0

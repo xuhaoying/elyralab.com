@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
+import { getToolBySlug } from '@/lib/tools';
 import { setRequestLocale } from 'next-intl/server';
 
-import { getToolBySlug } from '@/lib/tools';
 import { ToolLayout } from '@/shared/components/tools';
 import { getMetadata } from '@/shared/lib/seo';
 
@@ -13,7 +13,7 @@ const tool = getToolBySlug(toolSlug);
 export const generateMetadata = getMetadata({
   title: 'AI Search Readiness Checker | ElyraLab',
   description:
-    'Run a self-assessment for AI search readiness across brand clarity, entity information, FAQ coverage, schema, llms.txt, pricing pages, and original data.',
+    'Run an AI search readiness self-assessment with a score, missing foundations, top priority actions, schema checks, llms.txt status, and next-step roadmap.',
   keywords:
     'AI search readiness checker, answer engine optimization, llms.txt checker, schema checklist, AI SEO self assessment',
   canonicalUrl: '/tools/ai-search-readiness-checker',
