@@ -25,6 +25,8 @@ import {
   GeneratedResult,
   gmailCategories,
   LabelMode,
+  QueryRecipe,
+  queryRecipes,
   resultFileText,
   validateGmailForm,
 } from './gmail-search-query-generator.logic';
@@ -62,24 +64,15 @@ export function GmailSearchQueryGenerator({ toolSlug }: { toolSlug: string }) {
     setValidationMessage('');
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
+  function trackStartOnce() {
     if (!startedRef.current) {
       trackToolEvent('tool_start', { tool_slug: toolSlug });
       startedRef.current = true;
     }
+  }
 
-    const validationError = validateGmailForm(form);
-
-    if (validationError) {
-      setResult({ query: '', explanations: [], notices: [] });
-      setValidationMessage(validationError);
-      setEmptyState(validationError);
-      return;
-    }
-
-    const nextResult = buildGmailQuery(form);
+  function publishResult(nextForm: FormState, recipeId?: string) {
+    const nextResult = buildGmailQuery(nextForm);
     setResult(nextResult);
 
     if (!nextResult.query) {
@@ -93,9 +86,38 @@ export function GmailSearchQueryGenerator({ toolSlug }: { toolSlug: string }) {
       tool_slug: toolSlug,
       query_part_count: nextResult.explanations.length,
       character_count: nextResult.query.length,
-      has_attachment: form.hasAttachment,
-      unread_only: form.unreadOnly,
+      has_attachment: nextForm.hasAttachment,
+      unread_only: nextForm.unreadOnly,
+      recipe_id: recipeId,
     });
+  }
+
+  function applyRecipe(recipe: QueryRecipe) {
+    trackStartOnce();
+    const nextForm = {
+      ...emptyForm,
+      ...recipe.form,
+    };
+
+    setForm(nextForm);
+    setValidationMessage('');
+    publishResult(nextForm, recipe.id);
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    trackStartOnce();
+
+    const validationError = validateGmailForm(form);
+
+    if (validationError) {
+      setResult({ query: '', explanations: [], notices: [] });
+      setValidationMessage(validationError);
+      setEmptyState(validationError);
+      return;
+    }
+
+    publishResult(form);
   }
 
   function handleReset() {
@@ -116,6 +138,35 @@ export function GmailSearchQueryGenerator({ toolSlug }: { toolSlug: string }) {
         </CardHeader>
         <CardContent>
           <form className="space-y-6" onSubmit={handleSubmit}>
+            <section className="space-y-3" aria-labelledby="gmail-recipes">
+              <div className="space-y-1">
+                <h2 id="gmail-recipes" className="text-base font-semibold">
+                  Start from a common search
+                </h2>
+                <p className="text-muted-foreground text-sm leading-6">
+                  These presets generate immediately. Edit any field afterward
+                  to narrow the search.
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {queryRecipes.map((recipe) => (
+                  <button
+                    key={recipe.id}
+                    type="button"
+                    className="hover:bg-muted/60 focus-visible:ring-ring rounded-md border p-3 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                    onClick={() => applyRecipe(recipe)}
+                  >
+                    <span className="block text-sm font-medium">
+                      {recipe.title}
+                    </span>
+                    <span className="text-muted-foreground mt-1 block text-xs leading-5">
+                      {recipe.description}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
+
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="gmail-from">From</Label>

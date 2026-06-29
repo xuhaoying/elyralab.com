@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   buildGmailQuery,
   emptyForm,
+  queryRecipes,
   resultFileText,
   validateGmailForm,
 } from './gmail-search-query-generator.logic';
@@ -40,6 +41,32 @@ test('buildGmailQuery quotes labels with spaces', () => {
   });
 
   assert.equal(result.query, 'label:"Client Projects"');
+});
+
+test('query recipes generate useful starting queries', () => {
+  const invoiceRecipe = queryRecipes.find(
+    (recipe) => recipe.id === 'invoice-attachments'
+  );
+
+  assert.ok(invoiceRecipe);
+
+  const result = buildGmailQuery({
+    ...emptyForm,
+    ...invoiceRecipe.form,
+  });
+
+  assert.equal(result.query, 'subject:invoice receipt payment has:attachment');
+  assert.equal(result.notices.length, 0);
+});
+
+test('buildGmailQuery warns when a generated query is likely too broad', () => {
+  const result = buildGmailQuery({
+    ...emptyForm,
+    hasAttachment: true,
+  });
+
+  assert.equal(result.query, 'has:attachment');
+  assert.equal(result.notices[0]?.title, 'Broad search');
 });
 
 test('validateGmailForm rejects empty or reversed date ranges', () => {

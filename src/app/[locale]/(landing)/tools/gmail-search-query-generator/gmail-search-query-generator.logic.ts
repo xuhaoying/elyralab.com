@@ -32,6 +32,13 @@ export interface GeneratedResult {
   notices: QueryNotice[];
 }
 
+export interface QueryRecipe {
+  id: string;
+  title: string;
+  description: string;
+  form: Partial<FormState>;
+}
+
 export const emptyForm: FormState = {
   from: '',
   to: '',
@@ -68,6 +75,46 @@ export const gmailCategories = [
     label: 'Forums',
   },
 ] as const;
+
+export const queryRecipes: QueryRecipe[] = [
+  {
+    id: 'invoice-attachments',
+    title: 'Invoices with files',
+    description: 'Find invoice or receipt emails that include attachments.',
+    form: {
+      subjectKeyword: 'invoice',
+      containsWords: 'receipt, payment',
+      hasAttachment: true,
+    },
+  },
+  {
+    id: 'unread-updates',
+    title: 'Unread updates',
+    description: 'See unread messages in Gmail’s Updates category.',
+    form: {
+      unreadOnly: true,
+      labelMode: 'category',
+      labelValue: 'updates',
+    },
+  },
+  {
+    id: 'promo-cleanup',
+    title: 'Promotions cleanup',
+    description: 'Start from the Promotions category, then add a date range.',
+    form: {
+      labelMode: 'category',
+      labelValue: 'promotions',
+    },
+  },
+  {
+    id: 'attachment-hunt',
+    title: 'Attachment hunt',
+    description: 'Find emails with attachments and narrow by sender or words.',
+    form: {
+      hasAttachment: true,
+    },
+  },
+];
 
 export function quoteIfNeeded(value: string) {
   const trimmed = value.trim().replaceAll('"', '\\"');
@@ -223,6 +270,15 @@ export function buildGmailQuery(form: FormState): GeneratedResult {
   }
 
   const query = parts.map((item) => item.part).join(' ');
+
+  if (query && parts.length <= 1) {
+    notices.push({
+      tone: 'warning',
+      title: 'Broad search',
+      description:
+        'This query may return many emails. Add a sender, date range, label, or keyword if the first search is noisy.',
+    });
+  }
 
   if (query.length > 1200) {
     notices.push({
