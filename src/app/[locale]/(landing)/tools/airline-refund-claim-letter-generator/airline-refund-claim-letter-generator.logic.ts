@@ -27,6 +27,12 @@ export interface GeneratedClaim {
   subjectLine: string;
   letter: string;
   evidenceChecklist: string[];
+  claimPlan: ClaimPlanItem[];
+}
+
+export interface ClaimPlanItem {
+  label: string;
+  detail: string;
 }
 
 export type FieldErrors = Partial<Record<keyof FormState, string>>;
@@ -254,6 +260,73 @@ export function buildEvidenceChecklist(form: FormState) {
   return checklist;
 }
 
+export function buildClaimPlan(form: FormState): ClaimPlanItem[] {
+  const normalized = normalizedForm(form);
+  const plan: ClaimPlanItem[] = [
+    {
+      label: 'Best first channel',
+      detail:
+        'Submit through the airline refund, customer relations, or complaint form first. Save the confirmation number, then send the same letter by email if you have an address.',
+    },
+  ];
+
+  if (
+    normalized.desiredOutcome === 'refund' &&
+    ['cancelled', 'schedule changed', 'refund refused'].includes(
+      normalized.issueType
+    )
+  ) {
+    plan.push({
+      label: 'Main argument',
+      detail:
+        'Lead with the fact that the original service was not provided as booked and request a refund to the original payment method.',
+    });
+  } else if (
+    normalized.desiredOutcome === 'compensation' ||
+    ['delayed', 'denied boarding'].includes(normalized.issueType)
+  ) {
+    plan.push({
+      label: 'Main argument',
+      detail:
+        'Lead with the disruption timeline, what the airline told you, and any measurable costs or lost time caused by the incident.',
+    });
+  } else if (normalized.desiredOutcome === 'rebooking') {
+    plan.push({
+      label: 'Main argument',
+      detail:
+        'Lead with the replacement itinerary you want and ask the airline to confirm that there will be no extra fare, change fee, or service fee.',
+    });
+  } else {
+    plan.push({
+      label: 'Main argument',
+      detail:
+        'Lead with the disruption, explain why the requested outcome is fair, and ask for all voucher terms to be provided in writing.',
+    });
+  }
+
+  plan.push(
+    {
+      label: 'Follow-up timing',
+      detail:
+        normalized.tone === 'firm'
+          ? 'If there is no written response within 7 days, reply in the same thread and ask for a supervisor review or claim reference update.'
+          : 'If there is no written response within 10 to 14 days, reply in the same thread with the original subject line and attach your evidence again.',
+    },
+    {
+      label: 'Escalation packet',
+      detail:
+        'Keep the final letter, booking proof, airline notices, receipts, screenshots, and any denial reason together so you can escalate cleanly if the airline refuses.',
+    },
+    {
+      label: 'Accuracy check',
+      detail:
+        'Do not overstate facts or cite rules you have not checked. If you reference passenger rights, verify the rule for the country, airline, and itinerary first.',
+    }
+  );
+
+  return plan;
+}
+
 function buildOpening(form: FormState) {
   const flightReference = buildFlightReference(form);
   const issueDescription = issueDescriptions[form.issueType];
@@ -325,6 +398,7 @@ export function generateClaim(form: FormState): GeneratedClaim {
   ].filter(Boolean);
   const subjectLine = buildSubjectLine(normalized);
   const evidenceChecklist = buildEvidenceChecklist(normalized);
+  const claimPlan = buildClaimPlan(normalized);
   const body =
     normalized.tone === 'concise'
       ? [
@@ -356,12 +430,16 @@ export function generateClaim(form: FormState): GeneratedClaim {
     subjectLine,
     letter: compactLetterLines(body),
     evidenceChecklist,
+    claimPlan,
   };
 }
 
 export function downloadText(result: GeneratedClaim) {
   return [
     `Subject: ${result.subjectLine}`,
+    '',
+    'Claim plan:',
+    ...result.claimPlan.map((item) => `- ${item.label}: ${item.detail}`),
     '',
     'Evidence checklist:',
     ...result.evidenceChecklist.map((item) => `- ${item}`),

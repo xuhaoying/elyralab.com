@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
+import { getToolBySlug } from '@/lib/tools';
 import { setRequestLocale } from 'next-intl/server';
 
-import { getToolBySlug } from '@/lib/tools';
 import { ToolLayout } from '@/shared/components/tools';
 import { getMetadata } from '@/shared/lib/seo';
 
@@ -13,7 +13,7 @@ const tool = getToolBySlug(toolSlug);
 export const generateMetadata = getMetadata({
   title: 'Airline Refund Claim Letter Generator | ElyraLab',
   description:
-    'Generate a clear airline refund, compensation, voucher, or rebooking claim letter with an evidence checklist and suggested subject line.',
+    'Generate an airline refund, compensation, voucher, or rebooking claim package with a letter, subject line, evidence checklist, and follow-up plan.',
   keywords:
     'airline refund claim letter, flight refund letter, flight compensation claim, cancelled flight refund, denied boarding claim',
   canonicalUrl: '/tools/airline-refund-claim-letter-generator',

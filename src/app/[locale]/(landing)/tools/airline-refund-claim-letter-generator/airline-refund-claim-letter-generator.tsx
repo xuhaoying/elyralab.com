@@ -117,6 +117,7 @@ export function AirlineRefundClaimLetterGenerator({
       has_route: Boolean(form.route.trim()),
       extra_detail_length: form.extraDetails.trim().length,
       evidence_item_count: nextResult.evidenceChecklist.length,
+      claim_plan_step_count: nextResult.claimPlan.length,
       letter_character_count: nextResult.letter.length,
     });
   }
@@ -368,6 +369,20 @@ export function AirlineRefundClaimLetterGenerator({
               <p className="text-muted-foreground mt-2 text-sm leading-6">
                 {result.subjectLine}
               </p>
+            </div>
+
+            <div className="rounded-md border p-4">
+              <h3 className="text-sm font-semibold">Claim plan</h3>
+              <dl className="mt-3 space-y-3 text-sm leading-6">
+                {result.claimPlan.map((item) => (
+                  <div key={item.label}>
+                    <dt className="font-medium">{item.label}</dt>
+                    <dd className="text-muted-foreground mt-1">
+                      {item.detail}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
 
             <div className="rounded-md border p-4">
