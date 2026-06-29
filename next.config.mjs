@@ -15,6 +15,7 @@ const withNextIntl = createNextIntlPlugin({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: process.env.VERCEL ? undefined : 'standalone',
+  poweredByHeader: false,
   reactStrictMode: false,
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
   images: {
@@ -35,6 +36,15 @@ const nextConfig = {
     return [
       {
         source: '/imgs/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/:asset(favicon.ico|logo.png|preview.png)',
         headers: [
           {
             key: 'Cache-Control',
