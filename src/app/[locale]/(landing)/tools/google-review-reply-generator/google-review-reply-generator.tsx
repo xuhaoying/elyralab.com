@@ -107,6 +107,8 @@ export function GoogleReviewReplyGenerator({ toolSlug }: { toolSlug: string }) {
       has_customer_name: Boolean(form.customerName.trim()),
       has_business_name: Boolean(form.businessName.trim()),
       review_character_count: form.reviewText.trim().length,
+      recommended_reply: nextResult.recommendedReplyLabel,
+      has_private_detail_warning: Boolean(nextResult.privateDetailWarning),
     });
   }
 
@@ -304,6 +306,26 @@ export function GoogleReviewReplyGenerator({ toolSlug }: { toolSlug: string }) {
                 <span className="text-foreground font-medium">
                   {sentimentLabels[result.sentiment]}
                 </span>
+                <span className="mx-2" aria-hidden="true">
+                  /
+                </span>
+                Recommended version:{' '}
+                <span className="text-foreground font-medium">
+                  {result.recommendedReplyLabel}
+                </span>
+              </div>
+              <div className="rounded-md border p-4">
+                <h3 className="text-sm font-semibold">Publishing checklist</h3>
+                {result.privateDetailWarning ? (
+                  <p className="mt-3 rounded-md border border-amber-300/50 bg-amber-50/70 px-3 py-2 text-sm leading-6 text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-100">
+                    {result.privateDetailWarning}
+                  </p>
+                ) : null}
+                <ul className="text-muted-foreground mt-3 list-disc space-y-2 pl-5 text-sm leading-6">
+                  {result.publicReplyChecklist.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
               </div>
               <div className="grid gap-4">
                 <ReplyCard

@@ -2,11 +2,14 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  buildPublicReplyChecklist,
   downloadText,
   emptyForm,
   generateReplies,
   getDetailPhrase,
+  getRecommendedReplyLabel,
   getSentiment,
+  hasPossiblePrivateInfo,
   validateReviewForm,
 } from './google-review-reply-generator.logic';
 
@@ -22,10 +25,14 @@ test('generateReplies creates positive replies with customer and business contex
   });
 
   assert.equal(result.sentiment, 'positive');
+  assert.equal(result.recommendedReplyLabel, 'Warmer reply');
   assert.match(result.professionalReply, /Hi Taylor/);
   assert.match(result.professionalReply, /coffee shop/);
   assert.match(result.professionalReply, /"Great service and fast pickup\."/);
   assert.match(result.shortReply, /Acme Cafe/);
+  assert.ok(
+    result.publicReplyChecklist.some((item) => item.includes('incentives'))
+  );
 });
 
 test('generateReplies creates neutral replies for three-star reviews', () => {
@@ -100,7 +107,47 @@ test('helpers map sentiment and review details consistently', () => {
   assert.equal(getDetailPhrase('x'.repeat(91)), 'the details you shared');
 });
 
-test('downloadText includes all reply versions', () => {
+test('private detail detection prevents public replies from quoting sensitive review text', () => {
+  const reviewText = 'Order #ABCD1234 was wrong. Call me at 555-123-4567.';
+  const result = generateReplies({
+    ...emptyForm,
+    reviewText,
+    starRating: '2',
+    businessType: 'restaurant',
+  });
+
+  assert.equal(hasPossiblePrivateInfo(reviewText), true);
+  assert.equal(getDetailPhrase(reviewText), 'the details you shared');
+  assert.match(result.privateDetailWarning, /Potential private details/);
+  assert.doesNotMatch(result.professionalReply, /555-123-4567/);
+  assert.ok(
+    result.publicReplyChecklist[0].includes('Do not repeat those details')
+  );
+});
+
+test('publishing guidance changes by sentiment and selected tone', () => {
+  assert.equal(getRecommendedReplyLabel('concise', 'positive'), 'Short reply');
+  assert.equal(
+    getRecommendedReplyLabel('friendly', 'positive'),
+    'Warmer reply'
+  );
+  assert.equal(
+    getRecommendedReplyLabel('warm', 'negative'),
+    'Professional reply'
+  );
+  assert.ok(
+    buildPublicReplyChecklist(
+      {
+        ...emptyForm,
+        reviewText: 'Long wait.',
+        businessType: 'clinic',
+      },
+      'neutral'
+    ).some((item) => item.includes('specific fix'))
+  );
+});
+
+test('downloadText includes guidance and all reply versions', () => {
   const result = generateReplies({
     ...emptyForm,
     reviewText: 'Nice team.',
@@ -110,6 +157,8 @@ test('downloadText includes all reply versions', () => {
   const text = downloadText(result);
 
   assert.match(text, /Review sentiment: Positive/);
+  assert.match(text, /Recommended version:/);
+  assert.match(text, /Publishing checklist:/);
   assert.match(text, /Professional reply:/);
   assert.match(text, /Short reply:/);
   assert.match(text, /Warmer reply:/);

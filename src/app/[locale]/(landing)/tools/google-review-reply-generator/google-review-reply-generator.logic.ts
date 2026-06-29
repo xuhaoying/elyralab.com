@@ -1,6 +1,10 @@
 export type ReplyTone = 'professional' | 'friendly' | 'warm' | 'concise';
 export type Sentiment = 'positive' | 'neutral' | 'negative';
 export type StarRating = '1' | '2' | '3' | '4' | '5';
+export type ReplyVariantLabel =
+  | 'Professional reply'
+  | 'Short reply'
+  | 'Warmer reply';
 
 export interface FormState {
   reviewText: string;
@@ -13,9 +17,12 @@ export interface FormState {
 
 export interface ReplyResult {
   sentiment: Sentiment;
+  recommendedReplyLabel: ReplyVariantLabel;
   professionalReply: string;
   shortReply: string;
   warmerReply: string;
+  publicReplyChecklist: string[];
+  privateDetailWarning: string;
 }
 
 export type FieldErrors = Partial<Record<keyof FormState, string>>;
@@ -79,6 +86,22 @@ export function getSentiment(starRating: string): Sentiment {
 
 function cleanText(value: string) {
   return value.trim().replace(/\s+/g, ' ');
+}
+
+export function hasPossiblePrivateInfo(value: string) {
+  const text = value.trim();
+
+  if (!text) {
+    return false;
+  }
+
+  return (
+    /[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/.test(text) ||
+    /(?:\+?\d[\d\s().-]{6,}\d)/.test(text) ||
+    /\b(?:order|invoice|booking|reservation|account|case)\s*(?:number|no\.?|#)?\s*[:#-]?\s*[A-Z0-9-]{4,}\b/i.test(
+      text
+    )
+  );
 }
 
 export function validateReviewForm(form: FormState): ValidationResult {
@@ -156,6 +179,10 @@ export function getDetailPhrase(reviewText: string) {
     return 'your feedback';
   }
 
+  if (hasPossiblePrivateInfo(text)) {
+    return 'the details you shared';
+  }
+
   if (text.length <= 90) {
     return `your feedback about "${text}"`;
   }
@@ -175,7 +202,85 @@ function thankYou(tone: ReplyTone) {
   return 'Thank you';
 }
 
-function buildPositiveReplies(form: FormState): ReplyResult {
+export function buildPublicReplyChecklist(
+  form: FormState,
+  sentiment: Sentiment
+) {
+  const checklist = [
+    'Confirm the public reply does not include private customer, payment, order, health, or contact details.',
+    'Keep the reply focused on acknowledgement and next steps, not a point-by-point argument.',
+  ];
+
+  if (hasPossiblePrivateInfo(form.reviewText)) {
+    checklist.unshift(
+      'The review appears to include private details. Do not repeat those details in the public reply.'
+    );
+  }
+
+  if (sentiment === 'negative') {
+    checklist.push(
+      'Move specifics to a private channel and avoid admitting specific fault before your team reviews the case.'
+    );
+  } else if (sentiment === 'neutral') {
+    checklist.push(
+      'Mention improvement without promising a specific fix unless the business can actually deliver it.'
+    );
+  } else {
+    checklist.push(
+      'Personalize lightly, but avoid offering incentives for reviews or asking the customer to change their rating.'
+    );
+  }
+
+  return checklist;
+}
+
+export function getRecommendedReplyLabel(
+  tone: ReplyTone,
+  sentiment: Sentiment
+): ReplyVariantLabel {
+  if (sentiment === 'negative') {
+    return 'Professional reply';
+  }
+
+  if (tone === 'concise') {
+    return 'Short reply';
+  }
+
+  if (tone === 'warm' || tone === 'friendly') {
+    return 'Warmer reply';
+  }
+
+  return 'Professional reply';
+}
+
+function withPublishingGuidance(
+  result: Omit<
+    ReplyResult,
+    'recommendedReplyLabel' | 'publicReplyChecklist' | 'privateDetailWarning'
+  >,
+  form: FormState
+): ReplyResult {
+  const privateDetailWarning = hasPossiblePrivateInfo(form.reviewText)
+    ? 'Potential private details detected in the review. The generated replies avoid quoting the review directly.'
+    : '';
+
+  return {
+    ...result,
+    recommendedReplyLabel: getRecommendedReplyLabel(
+      form.tone,
+      result.sentiment
+    ),
+    publicReplyChecklist: buildPublicReplyChecklist(form, result.sentiment),
+    privateDetailWarning,
+  };
+}
+
+function buildPositiveReplies(
+  form: FormState
+): Omit<
+  ReplyResult,
+  'recommendedReplyLabel' | 'publicReplyChecklist' | 'privateDetailWarning'
+> {
   const greeting = getCustomerGreeting(form.customerName);
   const businessType = getBusinessReference(form.businessType);
   const signature = getBusinessSignature(form.businessName);
@@ -190,7 +295,12 @@ function buildPositiveReplies(form: FormState): ReplyResult {
   };
 }
 
-function buildNeutralReplies(form: FormState): ReplyResult {
+function buildNeutralReplies(
+  form: FormState
+): Omit<
+  ReplyResult,
+  'recommendedReplyLabel' | 'publicReplyChecklist' | 'privateDetailWarning'
+> {
   const greeting = getCustomerGreeting(form.customerName);
   const businessType = getBusinessReference(form.businessType);
   const signature = getBusinessSignature(form.businessName);
@@ -207,7 +317,12 @@ function buildNeutralReplies(form: FormState): ReplyResult {
   };
 }
 
-function buildNegativeReplies(form: FormState): ReplyResult {
+function buildNegativeReplies(
+  form: FormState
+): Omit<
+  ReplyResult,
+  'recommendedReplyLabel' | 'publicReplyChecklist' | 'privateDetailWarning'
+> {
   const greeting = getCustomerGreeting(form.customerName);
   const businessType = getBusinessReference(form.businessType);
   const signature = getBusinessSignature(form.businessName);
@@ -229,19 +344,26 @@ export function generateReplies(form: FormState): ReplyResult {
   const sentiment = getSentiment(normalized.starRating);
 
   if (sentiment === 'positive') {
-    return buildPositiveReplies(normalized);
+    return withPublishingGuidance(buildPositiveReplies(normalized), normalized);
   }
 
   if (sentiment === 'neutral') {
-    return buildNeutralReplies(normalized);
+    return withPublishingGuidance(buildNeutralReplies(normalized), normalized);
   }
 
-  return buildNegativeReplies(normalized);
+  return withPublishingGuidance(buildNegativeReplies(normalized), normalized);
 }
 
 export function downloadText(result: ReplyResult) {
   return [
     `Review sentiment: ${sentimentLabels[result.sentiment]}`,
+    `Recommended version: ${result.recommendedReplyLabel}`,
+    '',
+    'Publishing checklist:',
+    ...result.publicReplyChecklist.map((item) => `- ${item}`),
+    ...(result.privateDetailWarning
+      ? ['', `Privacy note: ${result.privateDetailWarning}`]
+      : []),
     '',
     'Professional reply:',
     result.professionalReply,

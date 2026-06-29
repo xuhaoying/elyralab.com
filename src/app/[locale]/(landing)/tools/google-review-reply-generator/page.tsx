@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
+import { getToolBySlug } from '@/lib/tools';
 import { setRequestLocale } from 'next-intl/server';
 
-import { getToolBySlug } from '@/lib/tools';
 import { ToolLayout } from '@/shared/components/tools';
 import { getMetadata } from '@/shared/lib/seo';
 
@@ -13,7 +13,7 @@ const tool = getToolBySlug(toolSlug);
 export const generateMetadata = getMetadata({
   title: 'Google Review Reply Generator | ElyraLab',
   description:
-    'Generate professional, short, and warmer replies to positive, neutral, and negative Google reviews using template-based local generation.',
+    'Generate professional, short, and warmer Google review replies with recommended version guidance and a public posting checklist.',
   keywords:
     'Google review reply generator, review response templates, business review replies, local business reputation',
   canonicalUrl: '/tools/google-review-reply-generator',
