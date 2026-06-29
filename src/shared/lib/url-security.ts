@@ -1,7 +1,14 @@
+import { lookup } from 'node:dns/promises';
+import { isIP } from 'node:net';
+
 const MAX_PROXY_FILE_BYTES = 100 * 1024 * 1024;
 
+function normalizeIpAddress(value: string) {
+  return value.replace(/^\[|\]$/g, '').trim().toLowerCase();
+}
+
 function parseIpv4(hostname: string) {
-  const parts = hostname.split('.');
+  const parts = normalizeIpAddress(hostname).split('.');
   if (parts.length !== 4) return null;
 
   const octets = parts.map((part) => {
@@ -33,7 +40,7 @@ function isPrivateIpv4(hostname: string) {
 }
 
 function isPrivateIpv6(hostname: string) {
-  const normalized = hostname.replace(/^\[|\]$/g, '').toLowerCase();
+  const normalized = normalizeIpAddress(hostname);
   return (
     normalized === '::1' ||
     normalized === '::' ||
@@ -44,7 +51,25 @@ function isPrivateIpv6(hostname: string) {
   );
 }
 
-export function validatePublicFetchUrl(rawUrl: string) {
+function isPrivateIpAddress(hostname: string) {
+  return isPrivateIpv4(hostname) || isPrivateIpv6(hostname);
+}
+
+async function resolvesToPrivateAddress(hostname: string) {
+  const normalized = normalizeIpAddress(hostname);
+  if (isIP(normalized)) {
+    return isPrivateIpAddress(normalized);
+  }
+
+  try {
+    const records = await lookup(normalized, { all: true });
+    return records.some((record) => isPrivateIpAddress(record.address));
+  } catch {
+    return true;
+  }
+}
+
+export async function validatePublicFetchUrl(rawUrl: string) {
   let url: URL;
   try {
     url = new URL(rawUrl);
@@ -70,7 +95,11 @@ export function validatePublicFetchUrl(rawUrl: string) {
     return { ok: false as const, error: 'Private hostnames are not allowed' };
   }
 
-  if (isPrivateIpv4(hostname) || isPrivateIpv6(hostname)) {
+  if (isPrivateIpAddress(hostname)) {
+    return { ok: false as const, error: 'Private network urls are not allowed' };
+  }
+
+  if (await resolvesToPrivateAddress(hostname)) {
     return { ok: false as const, error: 'Private network urls are not allowed' };
   }
 
@@ -100,4 +129,3 @@ export function validateProxyResponse(response: Response) {
 
   return { ok: true as const, contentType };
 }
-

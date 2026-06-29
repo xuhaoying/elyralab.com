@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    const validatedUrl = validatePublicFetchUrl(url);
+    const validatedUrl = await validatePublicFetchUrl(url);
     if (!validatedUrl.ok) {
       return new NextResponse(validatedUrl.error, { status: 400 });
     }
@@ -29,17 +29,16 @@ export async function GET(req: NextRequest) {
     const response = await fetch(validatedUrl.url, {
       redirect: 'manual',
       signal: controller.signal,
-    });
-    clearTimeout(timeout);
+    }).finally(() => clearTimeout(timeout));
+
+    if (response.status >= 300 && response.status < 400) {
+      return new NextResponse('Redirects are not allowed', { status: 400 });
+    }
 
     if (!response.ok) {
       return new NextResponse(`Failed to fetch file: ${response.statusText}`, {
         status: response.status,
       });
-    }
-
-    if (response.status >= 300 && response.status < 400) {
-      return new NextResponse('Redirects are not allowed', { status: 400 });
     }
 
     const validatedResponse = validateProxyResponse(response);
