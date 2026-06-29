@@ -6,7 +6,7 @@ export async function POST(req: Request) {
   try {
     const user = await getUserInfo();
     if (!user) {
-      return respErr('no auth, please sign in');
+      return respErr('no auth, please sign in', 401);
     }
 
     const credits = await getRemainingCredits(user.id);

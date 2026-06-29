@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     // get sign user info
     const user = await getUserInfo();
     if (!user) {
-      return respErr('no auth, please sign in');
+      return respErr('no auth, please sign in', 401);
     }
 
     // check if user is admin

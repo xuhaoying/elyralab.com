@@ -4,14 +4,14 @@ import { getUserInfo } from '@/shared/models/user';
 
 export async function POST(req: Request) {
   try {
+    const user = await getUserInfo();
+    if (!user) {
+      return respErr('no auth, please sign in', 401);
+    }
+
     let { chatId } = await req.json();
     if (!chatId) {
       return respErr('chatId is required');
-    }
-
-    const user = await getUserInfo();
-    if (!user) {
-      return respErr('no auth, please sign in');
     }
 
     const chat = await findChatById(chatId);

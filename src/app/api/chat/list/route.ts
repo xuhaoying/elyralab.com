@@ -4,17 +4,17 @@ import { getUserInfo } from '@/shared/models/user';
 
 export async function POST(req: Request) {
   try {
+    const user = await getUserInfo();
+    if (!user) {
+      return respErr('no auth, please sign in', 401);
+    }
+
     let { page, limit } = await req.json();
     if (!page) {
       page = 1;
     }
     if (!limit) {
       limit = 30;
-    }
-
-    const user = await getUserInfo();
-    if (!user) {
-      return respErr('no auth, please sign in');
     }
 
     const chats = await getChats({

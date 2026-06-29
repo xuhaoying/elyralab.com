@@ -57,6 +57,12 @@ function normalizeCheckoutMetadata(metadata: unknown) {
 
 export async function POST(req: Request) {
   try {
+    // get sign user
+    const user = await getUserInfo();
+    if (!user || !user.email) {
+      return respErr('no auth, please sign in', 401);
+    }
+
     const { product_id, currency, locale, payment_provider, metadata } =
       await req.json();
     if (!product_id) {
@@ -79,12 +85,6 @@ export async function POST(req: Request) {
 
     if (!pricingItem.product_id && !pricingItem.amount) {
       return respErr('invalid pricing item');
-    }
-
-    // get sign user
-    const user = await getUserInfo();
-    if (!user || !user.email) {
-      return respErr('no auth, please sign in');
     }
 
     // get configs

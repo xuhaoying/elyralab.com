@@ -108,14 +108,14 @@ export function createFailStaleImageTaskForTest(deps: {
 
 export async function POST(req: Request) {
   try {
+    const user = await getUserInfo();
+    if (!user) {
+      return respErr('unauthorized', 401);
+    }
+
     const { taskId } = await req.json();
     if (!taskId) {
       return respErr('invalid params');
-    }
-
-    const user = await getUserInfo();
-    if (!user) {
-      return respErr('unauthorized');
     }
 
     const task = await findAITaskById(taskId);

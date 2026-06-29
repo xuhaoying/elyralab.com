@@ -24,6 +24,12 @@ import { getUserInfo } from '@/shared/models/user';
 
 export async function POST(req: Request) {
   try {
+    // check user sign
+    const user = await getUserInfo();
+    if (!user) {
+      return new Response('no auth, please sign in', { status: 401 });
+    }
+
     const {
       chatId,
       message,
@@ -44,12 +50,6 @@ export async function POST(req: Request) {
 
     if (!message || !message.parts || message.parts.length === 0) {
       throw new Error('invalid message');
-    }
-
-    // check user sign
-    const user = await getUserInfo();
-    if (!user) {
-      throw new Error('no auth, please sign in');
     }
 
     // check chat

@@ -202,6 +202,12 @@ async function failTaskIfUnchanged(task: any) {
 
 export async function POST(request: Request) {
   try {
+    // get current user
+    const user = await getUserInfo();
+    if (!user) {
+      return respErr('no auth, please sign in', 401);
+    }
+
     let {
       provider,
       mediaType,
@@ -233,12 +239,6 @@ export async function POST(request: Request) {
           resolution: normalizeImageResolution(String(options.resolution || '')),
         };
       }
-    }
-
-    // get current user
-    const user = await getUserInfo();
-    if (!user) {
-      throw new Error('no auth, please sign in');
     }
 
     let costCredits = 4;

@@ -6,17 +6,17 @@ import { getUserInfo } from '@/shared/models/user';
 
 export async function POST(req: Request) {
   try {
+    const user = await getUserInfo();
+    if (!user) {
+      return respErr('no auth, please sign in', 401);
+    }
+
     const { message, body } = await req.json();
     if (!message || !message.text) {
       throw new Error('message is required');
     }
     if (!body || !body.model) {
       throw new Error('please select a model');
-    }
-
-    const user = await getUserInfo();
-    if (!user) {
-      throw new Error('no auth, please sign in');
     }
 
     // todo: check user credits

@@ -84,7 +84,7 @@ export async function POST(req: Request) {
   try {
     const user = await getUserInfo();
     if (!user) {
-      return respErr('unauthorized');
+      return respErr('unauthorized', 401);
     }
 
     const body = await req.json().catch(() => null);
