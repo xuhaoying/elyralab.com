@@ -12,6 +12,25 @@ const withNextIntl = createNextIntlPlugin({
   requestConfig: './src/core/i18n/request.ts',
 });
 
+const securityHeaders = [
+  {
+    key: 'X-Content-Type-Options',
+    value: 'nosniff',
+  },
+  {
+    key: 'Referrer-Policy',
+    value: 'strict-origin-when-cross-origin',
+  },
+  {
+    key: 'X-Frame-Options',
+    value: 'DENY',
+  },
+  {
+    key: 'Permissions-Policy',
+    value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+  },
+];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: process.env.VERCEL ? undefined : 'standalone',
@@ -56,6 +75,7 @@ const nextConfig = {
         // Allow OAuth popups to retain window.opener after cross-origin navigation
         source: '/:path*',
         headers: [
+          ...securityHeaders,
           {
             key: 'Cross-Origin-Opener-Policy',
             value: 'same-origin-allow-popups',

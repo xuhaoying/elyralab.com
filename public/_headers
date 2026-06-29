@@ -1,5 +1,21 @@
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+
 /_next/static/*
   Cache-Control: public,max-age=31536000,immutable
 
 /imgs/*
+  Cache-Control: public,max-age=31536000,immutable
+
+/favicon.ico
+  Cache-Control: public,max-age=31536000,immutable
+
+/logo.png
+  Cache-Control: public,max-age=31536000,immutable
+
+/preview.png
   Cache-Control: public,max-age=31536000,immutable
