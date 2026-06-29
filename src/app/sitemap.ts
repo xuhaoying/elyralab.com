@@ -7,7 +7,7 @@ import {
   getLocalizedUrl,
 } from '@/shared/lib/seo';
 
-const lastModified = new Date('2026-06-29T00:00:00.000Z');
+const lastModified = new Date('2026-06-30T00:00:00.000Z');
 
 const staticPages = [
   {
