@@ -4,8 +4,6 @@ import { envConfigs } from '@/config';
 import { defaultLocale, locales } from '@/config/locale';
 
 const privatePaths = [
-  '/privacy-policy',
-  '/terms-of-service',
   '/settings/*',
   '/activity/*',
   '/admin/*',

@@ -75,6 +75,16 @@ const staticPages = [
     priority: 0.4,
     changeFrequency: 'monthly',
   },
+  {
+    path: '/privacy-policy',
+    priority: 0.2,
+    changeFrequency: 'yearly',
+  },
+  {
+    path: '/terms-of-service',
+    priority: 0.2,
+    changeFrequency: 'yearly',
+  },
 ] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
