@@ -1,23 +1,27 @@
 name = "elyralab"
 main = ".open-next/worker.js"
-compatibility_date = "2025-03-01"
-compatibility_flags = ["nodejs_compat"]
+compatibility_date = "2026-06-01"
+compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
 
 [assets]
 binding = "ASSETS"
 directory = ".open-next/assets"
 
-[[hyperdrive]]
-binding = "HYPERDRIVE"
-id = ""
-localConnectionString = ""
+[[services]]
+# Self-reference service binding required by OpenNext cache/revalidation.
+binding = "WORKER_SELF_REFERENCE"
+service = "elyralab"
 
-[observability]
-enabled = true
+[[r2_buckets]]
+binding = "NEXT_INC_CACHE_R2_BUCKET"
+bucket_name = "elyralab-opennext-cache"
+
+[images]
+binding = "IMAGES"
 
 [vars]
 # app
-NEXT_PUBLIC_APP_URL = "http://localhost:3000"
+NEXT_PUBLIC_APP_URL = "https://elyralab.com"
 NEXT_PUBLIC_APP_NAME = "ElyraLab"
 
 # theme
@@ -25,18 +29,16 @@ NEXT_PUBLIC_THEME = "default"
 
 # appearance
 NEXT_PUBLIC_APPEARANCE = "system"
+NEXT_PUBLIC_DEFAULT_LOCALE = "en"
 
 # database
-DATABASE_URL = ""
 DATABASE_PROVIDER = "postgresql"
 DB_SINGLETON_ENABLED = "true"
 DB_MAX_CONNECTIONS = "1"
+NEXT_INC_CACHE_R2_PREFIX = "incremental-cache"
 
-# auth secret
-# openssl rand -base64 32
-AUTH_SECRET = ""
-
-# internal AI task dispatch
-# openssl rand -base64 32
-AI_DISPATCH_TOKENS = ""
-CRON_SECRET = ""
+# Configure secrets with `wrangler secret put`, not [vars]:
+# - DATABASE_URL
+# - AUTH_SECRET
+# - AI_DISPATCH_TOKENS
+# - CRON_SECRET
