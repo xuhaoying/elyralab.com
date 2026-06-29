@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/shared/components/ui/card';
+import { Checkbox } from '@/shared/components/ui/checkbox';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 
@@ -205,7 +206,7 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
                   Move-in costs
                 </h2>
                 <p className="text-muted-foreground text-sm">
-                  One-time charges due before or during the first month.
+                  One-time cash due before or during the first month.
                 </p>
               </div>
               <div className="grid gap-4 md:grid-cols-2">
@@ -253,6 +254,28 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
                   ) : null}
                 </div>
               </div>
+              <div className="flex items-start gap-3 rounded-md border p-3">
+                <Checkbox
+                  id="true-rent-securityDepositRefundable"
+                  checked={form.securityDepositRefundable}
+                  onCheckedChange={(checked) =>
+                    updateField('securityDepositRefundable', checked === true)
+                  }
+                  aria-describedby="true-rent-securityDepositRefundable-help"
+                />
+                <div className="space-y-1">
+                  <Label htmlFor="true-rent-securityDepositRefundable">
+                    Treat security deposit as refundable
+                  </Label>
+                  <p
+                    id="true-rent-securityDepositRefundable-help"
+                    className="text-muted-foreground text-sm leading-6"
+                  >
+                    Refundable deposits still count toward first-month cash
+                    needed, but are excluded from net lease cost.
+                  </p>
+                </div>
+              </div>
             </section>
 
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
@@ -280,7 +303,7 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
       >
         {result ? (
           <div className="space-y-5" aria-live="polite">
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
               <MetricCard
                 label="True monthly rent"
                 value={formatCurrency(result.trueMonthlyRent)}
@@ -290,12 +313,16 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
                 value={formatCurrency(result.firstMonthTotalCost)}
               />
               <MetricCard
-                label="Total lease cost"
+                label="Net lease cost"
                 value={formatCurrency(result.totalLeaseCost)}
               />
               <MetricCard
                 label="Annualized housing cost"
                 value={formatCurrency(result.annualizedHousingCost)}
+              />
+              <MetricCard
+                label="Cash before refunds"
+                value={formatCurrency(result.cashRequiredBeforeRefunds)}
               />
             </div>
 
@@ -314,11 +341,12 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
             <div className="space-y-3">
               <h3 className="text-sm font-semibold">Fee breakdown</h3>
               <div className="overflow-x-auto rounded-md border">
-                <table className="w-full min-w-[720px] text-sm">
+                <table className="w-full min-w-[820px] text-sm">
                   <thead className="bg-muted text-left">
                     <tr>
                       <th className="px-4 py-3 font-medium">Fee</th>
                       <th className="px-4 py-3 font-medium">Cadence</th>
+                      <th className="px-4 py-3 font-medium">Treatment</th>
                       <th className="px-4 py-3 text-right font-medium">
                         Amount
                       </th>
@@ -326,7 +354,7 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
                         First month
                       </th>
                       <th className="px-4 py-3 text-right font-medium">
-                        Lease total
+                        Net lease impact
                       </th>
                     </tr>
                   </thead>
@@ -336,6 +364,9 @@ export function TrueRentCalculator({ toolSlug }: { toolSlug: string }) {
                         <td className="px-4 py-3">{row.label}</td>
                         <td className="text-muted-foreground px-4 py-3">
                           {row.cadence}
+                        </td>
+                        <td className="text-muted-foreground px-4 py-3">
+                          {row.treatment}
                         </td>
                         <td className="px-4 py-3 text-right">
                           {formatCurrency(row.amount)}

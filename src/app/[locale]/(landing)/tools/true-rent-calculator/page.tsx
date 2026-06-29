@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
+import { getToolBySlug } from '@/lib/tools';
 import { setRequestLocale } from 'next-intl/server';
 
-import { getToolBySlug } from '@/lib/tools';
 import { ToolLayout } from '@/shared/components/tools';
 import { getMetadata } from '@/shared/lib/seo';
 
@@ -13,7 +13,7 @@ const tool = getToolBySlug(toolSlug);
 export const generateMetadata = getMetadata({
   title: 'True Rent Calculator | ElyraLab',
   description:
-    'Calculate true monthly rent, first-month move-in cost, total lease cost, annualized housing cost, and a full rental fee breakdown.',
+    'Calculate true monthly rent, first-month move-in cash, net lease cost, annualized housing cost, and refundable deposit impact.',
   keywords:
     'true rent calculator, apartment fee calculator, move in cost calculator, rent budget calculator',
   canonicalUrl: '/tools/true-rent-calculator',

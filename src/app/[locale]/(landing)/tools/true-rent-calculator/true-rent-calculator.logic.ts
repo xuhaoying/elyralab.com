@@ -11,13 +11,18 @@ export interface FormState {
   moveInFee: string;
   securityDeposit: string;
   leaseLengthMonths: string;
+  securityDepositRefundable: boolean;
 }
 
-export type RentAmountField = Exclude<keyof FormState, 'leaseLengthMonths'>;
+export type RentAmountField = Exclude<
+  keyof FormState,
+  'leaseLengthMonths' | 'securityDepositRefundable'
+>;
 
 export interface BreakdownRow {
   label: string;
   cadence: 'Monthly' | 'One-time';
+  treatment: 'Recurring cost' | 'Non-refundable cost' | 'Refundable deposit';
   amount: number;
   firstMonthImpact: number;
   leaseImpact: number;
@@ -27,9 +32,12 @@ export interface RentResult {
   leaseLengthMonths: number;
   monthlyRecurringTotal: number;
   oneTimeTotal: number;
+  nonRefundableOneTimeTotal: number;
+  refundableDepositTotal: number;
   amortizedOneTimeTotal: number;
   trueMonthlyRent: number;
   firstMonthTotalCost: number;
+  cashRequiredBeforeRefunds: number;
   totalLeaseCost: number;
   annualizedHousingCost: number;
   summary: string;
@@ -57,6 +65,7 @@ export const emptyForm: FormState = {
   moveInFee: '',
   securityDeposit: '',
   leaseLengthMonths: '12',
+  securityDepositRefundable: true,
 };
 
 export const monthlyFields: Array<{
@@ -213,16 +222,25 @@ function buildRow(
   label: string,
   cadence: BreakdownRow['cadence'],
   amount: number,
-  leaseLengthMonths: number
+  leaseLengthMonths: number,
+  treatment?: BreakdownRow['treatment']
 ): BreakdownRow {
   const isMonthly = cadence === 'Monthly';
+  const rowTreatment =
+    treatment || (isMonthly ? 'Recurring cost' : 'Non-refundable cost');
 
   return {
     label,
     cadence,
+    treatment: rowTreatment,
     amount,
     firstMonthImpact: amount,
-    leaseImpact: isMonthly ? amount * leaseLengthMonths : amount,
+    leaseImpact:
+      rowTreatment === 'Refundable deposit'
+        ? 0
+        : isMonthly
+          ? amount * leaseLengthMonths
+          : amount,
   };
 }
 
@@ -241,7 +259,10 @@ export function buildRentResult(form: FormState): RentResult {
       field.label,
       'One-time',
       parseCurrency(form[field.key]),
-      leaseLengthMonths
+      leaseLengthMonths,
+      field.key === 'securityDeposit' && form.securityDepositRefundable
+        ? 'Refundable deposit'
+        : 'Non-refundable cost'
     )
   );
   const rows = [...monthlyRows, ...oneTimeRows];
@@ -253,32 +274,44 @@ export function buildRentResult(form: FormState): RentResult {
     (total, row) => total + row.amount,
     0
   );
-  const totalLeaseCost =
+  const refundableDepositTotal = form.securityDepositRefundable
+    ? parseCurrency(form.securityDeposit)
+    : 0;
+  const nonRefundableOneTimeTotal = oneTimeTotal - refundableDepositTotal;
+  const cashRequiredBeforeRefunds =
     monthlyRecurringTotal * leaseLengthMonths + oneTimeTotal;
-  const amortizedOneTimeTotal = oneTimeTotal / leaseLengthMonths;
+  const totalLeaseCost =
+    monthlyRecurringTotal * leaseLengthMonths + nonRefundableOneTimeTotal;
+  const amortizedOneTimeTotal = nonRefundableOneTimeTotal / leaseLengthMonths;
   const trueMonthlyRent = monthlyRecurringTotal + amortizedOneTimeTotal;
   const firstMonthTotalCost = monthlyRecurringTotal + oneTimeTotal;
   const annualizedHousingCost = trueMonthlyRent * 12;
 
   const notes = [
-    'One-time move-in costs are spread across the lease to estimate true monthly rent.',
+    'Non-refundable move-in costs are spread across the lease to estimate true monthly rent.',
   ];
 
-  if (parseCurrency(form.securityDeposit) > 0) {
+  if (refundableDepositTotal > 0) {
     notes.push(
-      'Security deposit is included as cash required at move-in; if it is fully refunded, subtract it when comparing total net cost.'
+      'Security deposit is treated as refundable: it counts toward first-month cash needed, but not net lease cost.'
+    );
+  } else if (parseCurrency(form.securityDeposit) > 0) {
+    notes.push(
+      'Security deposit is treated as non-refundable, so it is included in true monthly rent and total lease cost.'
     );
   }
 
-  const summary = `Your true monthly rent is ${formatCurrency(
+  const summary = `Your estimated true monthly rent is ${formatCurrency(
     trueMonthlyRent
   )}. That combines ${formatCurrency(
     monthlyRecurringTotal
   )} in recurring monthly rent and fees with ${formatCurrency(
     amortizedOneTimeTotal
-  )} in upfront costs spread across a ${leaseLengthMonths}-month lease. Your first-month cash need is ${formatCurrency(
+  )} in non-refundable upfront costs spread across a ${leaseLengthMonths}-month lease. Your first-month cash need is ${formatCurrency(
     firstMonthTotalCost
-  )}, total lease cost is ${formatCurrency(
+  )}, cash required before any refund is ${formatCurrency(
+    cashRequiredBeforeRefunds
+  )}, net total lease cost is ${formatCurrency(
     totalLeaseCost
   )}, and annualized housing cost is ${formatCurrency(annualizedHousingCost)}.`;
 
@@ -286,9 +319,12 @@ export function buildRentResult(form: FormState): RentResult {
     leaseLengthMonths,
     monthlyRecurringTotal,
     oneTimeTotal,
+    nonRefundableOneTimeTotal,
+    refundableDepositTotal,
     amortizedOneTimeTotal,
     trueMonthlyRent,
     firstMonthTotalCost,
+    cashRequiredBeforeRefunds,
     totalLeaseCost,
     annualizedHousingCost,
     summary,
@@ -303,10 +339,18 @@ export function resultText(result: RentResult) {
     '',
     `True monthly rent: ${formatCurrency(result.trueMonthlyRent)}`,
     `Recurring monthly costs: ${formatCurrency(result.monthlyRecurringTotal)}`,
-    `Amortized upfront costs: ${formatCurrency(result.amortizedOneTimeTotal)}`,
+    `Amortized non-refundable upfront costs: ${formatCurrency(
+      result.amortizedOneTimeTotal
+    )}`,
     `First-month total cost: ${formatCurrency(result.firstMonthTotalCost)}`,
-    `Total lease cost: ${formatCurrency(result.totalLeaseCost)}`,
+    `Cash required before refunds: ${formatCurrency(
+      result.cashRequiredBeforeRefunds
+    )}`,
+    `Net total lease cost: ${formatCurrency(result.totalLeaseCost)}`,
     `Annualized housing cost: ${formatCurrency(result.annualizedHousingCost)}`,
+    `Refundable deposit excluded from net cost: ${formatCurrency(
+      result.refundableDepositTotal
+    )}`,
     `Lease length: ${result.leaseLengthMonths} months`,
     '',
     result.summary,
@@ -319,9 +363,9 @@ export function resultText(result: RentResult) {
       (row) =>
         `- ${row.label}: ${row.cadence}, ${formatCurrency(
           row.amount
-        )}, first month ${formatCurrency(
+        )}, ${row.treatment.toLowerCase()}, first month ${formatCurrency(
           row.firstMonthImpact
-        )}, lease total ${formatCurrency(row.leaseImpact)}`
+        )}, net lease impact ${formatCurrency(row.leaseImpact)}`
     ),
   ].join('\n');
 }
@@ -341,20 +385,39 @@ export function resultCsv(result: RentResult) {
     ['Metric', 'Amount'],
     ['True monthly rent', result.trueMonthlyRent.toFixed(2)],
     ['Recurring monthly costs', result.monthlyRecurringTotal.toFixed(2)],
-    ['Amortized upfront costs', result.amortizedOneTimeTotal.toFixed(2)],
+    [
+      'Amortized non-refundable upfront costs',
+      result.amortizedOneTimeTotal.toFixed(2),
+    ],
     ['First-month total cost', result.firstMonthTotalCost.toFixed(2)],
-    ['Total lease cost', result.totalLeaseCost.toFixed(2)],
+    [
+      'Cash required before refunds',
+      result.cashRequiredBeforeRefunds.toFixed(2),
+    ],
+    ['Net total lease cost', result.totalLeaseCost.toFixed(2)],
     ['Annualized housing cost', result.annualizedHousingCost.toFixed(2)],
+    [
+      'Refundable deposit excluded from net cost',
+      result.refundableDepositTotal.toFixed(2),
+    ],
     ['Lease length months', result.leaseLengthMonths],
     ['Plain-English summary', result.summary],
     [],
     ['Assumption'],
     ...result.notes.map((note) => [note]),
     [],
-    ['Fee', 'Cadence', 'Amount', 'First-month impact', 'Lease total'],
+    [
+      'Fee',
+      'Cadence',
+      'Treatment',
+      'Amount',
+      'First-month impact',
+      'Net lease impact',
+    ],
     ...result.rows.map((row) => [
       row.label,
       row.cadence,
+      row.treatment,
       row.amount.toFixed(2),
       row.firstMonthImpact.toFixed(2),
       row.leaseImpact.toFixed(2),
