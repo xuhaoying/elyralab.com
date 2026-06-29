@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
+import { getToolBySlug } from '@/lib/tools';
 import { setRequestLocale } from 'next-intl/server';
 
-import { getToolBySlug } from '@/lib/tools';
 import { ToolLayout } from '@/shared/components/tools';
 import { getMetadata } from '@/shared/lib/seo';
 
@@ -13,7 +13,7 @@ const tool = getToolBySlug(toolSlug);
 export const generateMetadata = getMetadata({
   title: 'BNPL Payment Calendar | ElyraLab',
   description:
-    'Create a buy-now-pay-later payment schedule with payment dates, amount per payment, total amount, next due dates, checklist copy, and CSV download.',
+    'Create a buy-now-pay-later payment schedule with due dates, monthly cash-flow totals, peak payment month, checklist copy, and CSV download.',
   keywords:
     'BNPL payment calendar, buy now pay later schedule, installment payment planner, payment checklist, payment CSV',
   canonicalUrl: '/tools/bnpl-payment-calendar',

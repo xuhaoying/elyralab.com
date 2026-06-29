@@ -117,6 +117,11 @@ export function BNPLPaymentCalendar({ toolSlug }: { toolSlug: string }) {
       has_merchant_name: Boolean(nextResult.merchantName),
       has_note: Boolean(nextResult.note),
       next_payment_count: nextResult.nextPayments.length,
+      missed_payment_count: nextResult.missedPayments.length,
+      peak_month_total: Number(
+        (nextResult.peakMonth.totalAmountCents / 100).toFixed(2)
+      ),
+      warning_count: nextResult.warnings.length,
     });
   }
 
@@ -327,7 +332,7 @@ export function BNPLPaymentCalendar({ toolSlug }: { toolSlug: string }) {
       >
         {result ? (
           <div className="space-y-5" aria-live="polite">
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <MetricCard
                 label="Amount per payment"
                 value={result.amountPerPaymentLabel}
@@ -337,15 +342,81 @@ export function BNPLPaymentCalendar({ toolSlug }: { toolSlug: string }) {
                 value={formatCurrencyFromCents(result.totalAmountCents)}
               />
               <MetricCard
-                label="Next dates"
-                value={
-                  result.nextPayments.length > 0
-                    ? result.nextPayments
-                        .map((row) => formatDisplayDate(row.dueDate))
-                        .join(', ')
-                    : 'No upcoming payments'
-                }
+                label="Final payment"
+                value={formatDisplayDate(result.finalPaymentDate)}
               />
+              <MetricCard
+                label="Peak month"
+                value={`${result.peakMonth.label}: ${formatCurrencyFromCents(
+                  result.peakMonth.totalAmountCents
+                )}`}
+              />
+            </div>
+
+            <div className="rounded-md border p-4">
+              <h3 className="text-sm font-semibold">Plain-English summary</h3>
+              <p className="text-muted-foreground mt-2 text-sm leading-6">
+                {result.summary}
+              </p>
+            </div>
+
+            <div className="rounded-md border p-4">
+              <h3 className="text-sm font-semibold">Next payments</h3>
+              <p className="text-muted-foreground mt-2 text-sm leading-6">
+                {result.nextPayments.length > 0
+                  ? result.nextPayments
+                      .map(
+                        (row) =>
+                          `${formatDisplayDate(row.dueDate)} (${formatCurrencyFromCents(
+                            row.amountCents
+                          )})`
+                      )
+                      .join(', ')
+                  : 'No upcoming payments based on the selected dates.'}
+              </p>
+            </div>
+
+            {result.warnings.length > 0 ? (
+              <div className="rounded-md border border-amber-300/50 bg-amber-50/70 p-4 text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-100">
+                <h3 className="text-sm font-semibold">Cash flow notes</h3>
+                <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6">
+                  {result.warnings.map((warning) => (
+                    <li key={warning}>{warning}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold">Monthly cash flow</h3>
+              <div className="overflow-x-auto rounded-md border">
+                <table className="w-full min-w-[420px] text-sm">
+                  <thead className="bg-muted text-left">
+                    <tr>
+                      <th className="px-4 py-3 font-medium">Month</th>
+                      <th className="px-4 py-3 text-right font-medium">
+                        Payments
+                      </th>
+                      <th className="px-4 py-3 text-right font-medium">
+                        Total
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {result.monthlyTotals.map((month) => (
+                      <tr key={month.monthKey} className="border-t">
+                        <td className="px-4 py-3">{month.label}</td>
+                        <td className="px-4 py-3 text-right">
+                          {month.paymentCount}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {formatCurrencyFromCents(month.totalAmountCents)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <div className="space-y-3">

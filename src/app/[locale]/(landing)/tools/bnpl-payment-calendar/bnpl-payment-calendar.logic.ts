@@ -17,6 +17,13 @@ export interface PaymentRow {
   note: string;
 }
 
+export interface MonthlyPaymentTotal {
+  monthKey: string;
+  label: string;
+  paymentCount: number;
+  totalAmountCents: number;
+}
+
 export interface PaymentScheduleResult {
   totalAmountCents: number;
   amountPerPaymentLabel: string;
@@ -26,6 +33,12 @@ export interface PaymentScheduleResult {
   note: string;
   rows: PaymentRow[];
   nextPayments: PaymentRow[];
+  missedPayments: PaymentRow[];
+  monthlyTotals: MonthlyPaymentTotal[];
+  peakMonth: MonthlyPaymentTotal;
+  finalPaymentDate: Date;
+  warnings: string[];
+  summary: string;
 }
 
 export type FieldErrors = Partial<Record<keyof FormState, string>>;
@@ -120,6 +133,14 @@ export function formatDisplayDate(date: Date) {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
+  }).format(date);
+}
+
+export function formatMonthLabel(date: Date) {
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: 'UTC',
+    year: 'numeric',
+    month: 'short',
   }).format(date);
 }
 
@@ -255,6 +276,76 @@ function normalizeToday(today: Date) {
   );
 }
 
+export function buildMonthlyTotals(rows: PaymentRow[]) {
+  const totals = new Map<string, MonthlyPaymentTotal>();
+
+  rows.forEach((row) => {
+    const monthKey = `${row.dueDate.getUTCFullYear()}-${String(
+      row.dueDate.getUTCMonth() + 1
+    ).padStart(2, '0')}`;
+    const current = totals.get(monthKey);
+
+    if (current) {
+      current.paymentCount += 1;
+      current.totalAmountCents += row.amountCents;
+      return;
+    }
+
+    totals.set(monthKey, {
+      monthKey,
+      label: formatMonthLabel(row.dueDate),
+      paymentCount: 1,
+      totalAmountCents: row.amountCents,
+    });
+  });
+
+  return Array.from(totals.values()).sort((left, right) =>
+    left.monthKey.localeCompare(right.monthKey)
+  );
+}
+
+function buildWarnings({
+  missedPayments,
+  peakMonth,
+  numberOfPayments,
+  paymentFrequency,
+}: {
+  missedPayments: PaymentRow[];
+  peakMonth: MonthlyPaymentTotal;
+  numberOfPayments: number;
+  paymentFrequency: PaymentFrequency;
+}) {
+  const warnings: string[] = [];
+
+  if (missedPayments.length > 0) {
+    warnings.push(
+      `${missedPayments.length} payment${
+        missedPayments.length === 1 ? '' : 's'
+      } are before today. Update the first payment date if this plan has already changed.`
+    );
+  }
+
+  if (peakMonth.paymentCount > 1) {
+    warnings.push(
+      `${peakMonth.label} has ${peakMonth.paymentCount} payments totaling ${formatCurrencyFromCents(
+        peakMonth.totalAmountCents
+      )}. Check that this fits your monthly cash flow.`
+    );
+  }
+
+  if (numberOfPayments >= 12) {
+    warnings.push(
+      'This is a long BNPL commitment. Consider whether future purchases could overlap with this schedule.'
+    );
+  } else if (paymentFrequency !== 'monthly' && numberOfPayments >= 4) {
+    warnings.push(
+      'Weekly and biweekly plans can create multiple charges in the same month. Add reminders before each due date.'
+    );
+  }
+
+  return warnings;
+}
+
 export function buildSchedule(form: FormState, today = new Date()) {
   const totalAmountCents = parseAmountCents(form.purchaseAmount);
   const numberOfPayments = parsePaymentCount(form.numberOfPayments);
@@ -278,6 +369,27 @@ export function buildSchedule(form: FormState, today = new Date()) {
   const nextPayments = rows
     .filter((row) => row.dueDate >= normalizedToday)
     .slice(0, 3);
+  const missedPayments = rows.filter((row) => row.dueDate < normalizedToday);
+  const monthlyTotals = buildMonthlyTotals(rows);
+  const peakMonth = monthlyTotals.reduce((peak, month) =>
+    month.totalAmountCents > peak.totalAmountCents ? month : peak
+  );
+  const finalPaymentDate = rows[rows.length - 1].dueDate;
+  const warnings = buildWarnings({
+    missedPayments,
+    peakMonth,
+    numberOfPayments,
+    paymentFrequency: form.paymentFrequency,
+  });
+  const summary = `This plan has ${numberOfPayments} ${
+    numberOfPayments === 1 ? 'payment' : 'payments'
+  } totaling ${formatCurrencyFromCents(
+    totalAmountCents
+  )}. The final payment is due ${formatDisplayDate(
+    finalPaymentDate
+  )}, and the highest monthly cash load is ${formatCurrencyFromCents(
+    peakMonth.totalAmountCents
+  )} in ${peakMonth.label}.`;
 
   return {
     totalAmountCents,
@@ -288,6 +400,12 @@ export function buildSchedule(form: FormState, today = new Date()) {
     note,
     rows,
     nextPayments,
+    missedPayments,
+    monthlyTotals,
+    peakMonth,
+    finalPaymentDate,
+    warnings,
+    summary,
   } satisfies PaymentScheduleResult;
 }
 
@@ -302,6 +420,12 @@ export function checklistText(result: PaymentScheduleResult) {
     `Amount per payment: ${result.amountPerPaymentLabel}`,
     `Frequency: ${frequencyLabels[result.paymentFrequency]}`,
     `Payments: ${result.numberOfPayments}`,
+    `Final payment: ${formatDisplayDate(result.finalPaymentDate)}`,
+    `Peak month: ${result.peakMonth.label} (${formatCurrencyFromCents(
+      result.peakMonth.totalAmountCents
+    )})`,
+    '',
+    result.summary,
   ];
 
   if (result.note) {
@@ -316,6 +440,13 @@ export function checklistText(result: PaymentScheduleResult) {
       )} due ${formatDisplayDate(row.dueDate)}`
     );
   });
+
+  if (result.warnings.length > 0) {
+    lines.push('', 'Cash flow notes:');
+    result.warnings.forEach((warning) => {
+      lines.push(`- ${warning}`);
+    });
+  }
 
   return lines.join('\n');
 }
@@ -340,6 +471,17 @@ export function scheduleCsv(result: PaymentScheduleResult) {
       row.merchantName,
       row.note,
     ]),
+    [],
+    ['Monthly cash flow'],
+    ['Month', 'Payments', 'Total'],
+    ...result.monthlyTotals.map((month) => [
+      month.label,
+      month.paymentCount,
+      (month.totalAmountCents / 100).toFixed(2),
+    ]),
+    [],
+    ['Cash flow notes'],
+    ...result.warnings.map((warning) => [warning]),
   ];
 
   return rows
