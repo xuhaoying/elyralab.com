@@ -33,6 +33,7 @@ function CardInner({ tool }: { tool: ToolDefinition }) {
       </CardHeader>
       <CardContent className="mt-auto flex flex-wrap items-center justify-between gap-3">
         <span className="flex flex-wrap gap-2">
+          {tool.useCase ? <Badge variant="outline">{tool.useCase}</Badge> : null}
           <Badge variant="outline">{tool.category}</Badge>
           <Badge variant="secondary">{getToolAccessLabel(tool.access)}</Badge>
         </span>

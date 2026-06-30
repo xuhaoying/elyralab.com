@@ -3,7 +3,9 @@ import {
   Calculator,
   MailSearch,
   MessageSquareReply,
+  PawPrint,
   Plane,
+  Salad,
   SearchCheck,
   Wrench,
   type LucideIcon,
@@ -16,7 +18,9 @@ const iconMap: Record<string, LucideIcon> = {
   Calculator,
   MailSearch,
   MessageSquareReply,
+  PawPrint,
   Plane,
+  Salad,
   SearchCheck,
 };
 

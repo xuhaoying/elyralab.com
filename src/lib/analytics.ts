@@ -8,6 +8,7 @@ export type ToolAnalyticsEvent =
   | 'result_generated'
   | 'copy_result'
   | 'download_result'
+  | 'print_result'
   | 'related_tool_click';
 
 declare global {

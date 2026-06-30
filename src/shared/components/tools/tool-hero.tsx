@@ -17,7 +17,10 @@ export function ToolHero({
   eyebrow?: string;
   title: string;
   description: string;
-  tool?: Pick<ToolDefinition, 'category' | 'status' | 'access' | 'icon'>;
+  tool?: Pick<
+    ToolDefinition,
+    'category' | 'status' | 'access' | 'icon' | 'useCase'
+  >;
   children?: ReactNode;
   className?: string;
 }) {
@@ -34,6 +37,9 @@ export function ToolHero({
             {eyebrow ? <Badge variant="outline">{eyebrow}</Badge> : null}
             {tool?.category ? (
               <Badge variant="secondary">{tool.category}</Badge>
+            ) : null}
+            {tool?.useCase ? (
+              <Badge variant="outline">{tool.useCase}</Badge>
             ) : null}
             {tool?.access ? (
               <Badge variant="outline">{getToolAccessLabel(tool.access)}</Badge>

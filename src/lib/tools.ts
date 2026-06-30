@@ -2,6 +2,7 @@ export type ToolStatus = 'available' | 'planned';
 export type ToolAccess = 'free' | 'freemium' | 'paid';
 
 export type ToolCategory =
+  | 'Lightweight Planning'
   | 'Email & Communication'
   | 'Finance & Payments'
   | 'Travel & Consumer Rights'
@@ -24,10 +25,12 @@ export interface ToolDefinition {
   href: string;
   icon: string;
   keywords: string[];
+  useCase?: string;
   faq?: ToolFAQItem[];
 }
 
 export const toolCategories: ToolCategory[] = [
+  'Lightweight Planning',
   'Email & Communication',
   'Finance & Payments',
   'Travel & Consumer Rights',
@@ -36,6 +39,110 @@ export const toolCategories: ToolCategory[] = [
 ];
 
 export const tools: ToolDefinition[] = [
+  {
+    slug: 'dog-fireworks-anxiety-checklist',
+    name: 'Free Dog Fireworks Anxiety Plan Generator',
+    shortName: 'Dog Fireworks Anxiety Plan',
+    description:
+      'Create a printable safety checklist for fireworks, thunderstorms, and other loud-noise events.',
+    category: 'Lightweight Planning',
+    status: 'available',
+    access: 'free',
+    href: '/tools/dog-fireworks-anxiety-checklist',
+    icon: 'PawPrint',
+    useCase: 'Pet safety',
+    keywords: [
+      'dog fireworks anxiety checklist',
+      'July 4 dog anxiety plan',
+      'pet noise anxiety',
+      'cat fireworks anxiety',
+      'thunderstorm pet safety',
+    ],
+    faq: [
+      {
+        question: 'How early should I prepare my dog for fireworks?',
+        answer:
+          'For mild reactions, prepare the safe room before the event day and close escape routes before noise starts. If your dog has a history of escape, self-injury, extreme panic, seizures, heart disease, or breathing problems, contact a veterinarian as early as possible before the event.',
+      },
+      {
+        question: 'What should I do if my dog hides during fireworks?',
+        answer:
+          'Let your dog hide if the spot is physically safe. Do not pull them out, punish fear behavior, or force interaction. Keep the room secure, quiet, and stocked with water and familiar bedding.',
+      },
+      {
+        question: 'Should I leave my dog alone during fireworks?',
+        answer:
+          'Avoid leaving a dog alone if they shake, pant, refuse food, try to escape, damage doors or crates, or injure themselves during loud noise. If being alone cannot be avoided, use the most secure interior area and remove hazards.',
+      },
+      {
+        question: 'Can cats be scared of fireworks too?',
+        answer:
+          'Yes. Cats can hide, refuse food, tremble, vocalize, or try to escape during fireworks, thunderstorms, and construction noise. The checklist supports cats as well as dogs.',
+      },
+      {
+        question: 'When should I call a vet about fireworks anxiety?',
+        answer:
+          'Call a veterinarian before the event if your pet has a history of escaping, self-injury, seizures, heart disease, breathing problems, destructive panic, or extreme fear. Do not give medication or supplements without asking a vet.',
+      },
+      {
+        question: 'Does this checklist work for thunderstorms?',
+        answer:
+          'Yes. The same safety steps apply to thunderstorms, local fireworks, New Year fireworks, construction noise, and other loud events. Adjust timing based on the forecast or event schedule.',
+      },
+    ],
+  },
+  {
+    slug: 'no-cook-heatwave-meal-planner',
+    name: 'No-Cook Heatwave Meal Planner',
+    shortName: 'Heatwave Meal Planner',
+    description:
+      'Build a simple no-cook meal plan and grocery list for hot days and small kitchens.',
+    category: 'Lightweight Planning',
+    status: 'available',
+    access: 'free',
+    href: '/tools/no-cook-heatwave-meal-planner',
+    icon: 'Salad',
+    useCase: 'Heatwave meals',
+    keywords: [
+      'no-cook heatwave meal planner',
+      'no cook meals',
+      'heatwave meals',
+      'dorm meal plan',
+      'small kitchen meal prep',
+    ],
+    faq: [
+      {
+        question: 'What can I eat during a heatwave without cooking?',
+        answer:
+          'Simple options include yogurt bowls, overnight oats, hummus wraps, bean salads, tuna or salmon packets, fruit, snack plates, peanut butter sandwiches, and shelf-stable backup meals when cold storage is limited.',
+      },
+      {
+        question: 'What are cheap no-cook meals?',
+        answer:
+          'Low-cost anchors include peanut butter, beans, oats, bread, rice cakes, canned fish, bananas, yogurt when cold storage is available, and bagged salad when it will be eaten quickly.',
+      },
+      {
+        question: 'What no-cook meals work in a dorm?',
+        answer:
+          'Dorm-friendly meals include wraps, yogurt and granola, hummus plates, tuna packets with crackers, fruit cups, overnight oats, and microwave rice bowls if a microwave is available.',
+      },
+      {
+        question: 'How do I meal prep without a stove?',
+        answer:
+          'Pick a few repeatable bases such as wraps, salads, snack plates, oats, and bean bowls. Keep ingredients cold when needed, buy smaller amounts if storage is limited, and assemble meals right before eating.',
+      },
+      {
+        question: 'What should seniors eat during hot weather?',
+        answer:
+          'This tool can suggest soft, hydrating, simple-prep foods, but it is not medical or nutrition advice. For chronic illness, swallowing problems, diabetes, kidney disease, or restricted diets, consult a qualified professional.',
+      },
+      {
+        question: 'Can I make high-protein meals without cooking?',
+        answer:
+          'Yes. Depending on storage and preferences, options can include Greek yogurt, canned tuna or salmon, rotisserie chicken, beans, hummus, tofu, and pre-cooked eggs. Keep perishable foods cold.',
+      },
+    ],
+  },
   {
     slug: 'gmail-search-query-generator',
     name: 'Gmail Search Query Generator',

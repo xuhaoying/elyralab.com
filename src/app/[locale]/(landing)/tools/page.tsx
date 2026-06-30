@@ -15,9 +15,9 @@ function getCategoryId(category: string) {
 export const generateMetadata = getMetadata({
   title: 'Tool Directory | ElyraLab',
   description:
-    'Browse the ElyraLab tool directory by category, including Gmail search, rent, travel refund, payment calendar, review reply, and AI search tools.',
+    'Browse the ElyraLab tool directory by category, including lightweight planning, Gmail search, rent, travel refund, payment calendar, review reply, and AI search tools.',
   keywords:
-    'tool directory, browser tools, Gmail search query generator, rent calculator, AI search checker',
+    'tool directory, browser tools, lightweight planning tools, dog fireworks anxiety checklist, no-cook heatwave meal planner, Gmail search query generator',
   canonicalUrl: '/tools',
 });
 

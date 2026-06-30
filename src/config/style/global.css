@@ -112,6 +112,44 @@ pre {
   mix-blend-mode: normal;
 }
 
+@media print {
+  @page {
+    margin: 0.5in;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  [data-print-root],
+  [data-print-root] * {
+    visibility: visible;
+  }
+
+  [data-print-root] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  [data-print-hidden='true'],
+  [data-print-hidden='true'] * {
+    display: none !important;
+  }
+
+  [data-print-page] {
+    break-inside: avoid;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

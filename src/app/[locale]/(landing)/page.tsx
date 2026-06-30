@@ -11,9 +11,9 @@ import { getMetadata } from '@/shared/lib/seo';
 export const generateMetadata = getMetadata({
   title: 'ElyraLab Tool Library | Everyday Workflow Tools',
   description:
-    'A growing directory of browser-based tools for email, finance, travel, reputation, and AI search workflows.',
+    'A growing directory of browser-based tools for lightweight planning, email, finance, travel, reputation, and AI search workflows.',
   keywords:
-    'online tools, tool directory, Gmail search query generator, productivity tools',
+    'online tools, tool directory, lightweight planning tools, no-cook meal planner, dog fireworks anxiety checklist, productivity tools',
   canonicalUrl: '/',
 });
 
