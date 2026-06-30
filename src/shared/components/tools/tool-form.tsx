@@ -112,23 +112,24 @@ export function ToolForm({
             const value = values[question.id];
             const questionId = `tool-question-${question.id}`;
             const helpId = `${questionId}-help`;
+            const describedBy = question.description ? helpId : undefined;
 
             return (
               <section
                 key={question.id}
                 className="space-y-3"
                 aria-labelledby={questionId}
-                aria-describedby={question.description ? helpId : undefined}
+                aria-describedby={describedBy}
               >
                 <div className="space-y-1">
                   <Label id={questionId} className="text-base font-semibold">
                     {question.label}
                   </Label>
-                  <QuestionHelp>
-                    {question.description ? (
+                  {question.description ? (
+                    <QuestionHelp>
                       <span id={helpId}>{question.description}</span>
-                    ) : null}
-                  </QuestionHelp>
+                    </QuestionHelp>
+                  ) : null}
                 </div>
 
                 {question.type === 'radio' && question.options ? (
@@ -138,6 +139,8 @@ export function ToolForm({
                       onValueChange(question.id, nextValue)
                     }
                     className="grid gap-3 sm:grid-cols-2"
+                    aria-labelledby={questionId}
+                    aria-describedby={describedBy}
                   >
                     {question.options.map((option) => {
                       const optionId = `${questionId}-${option.value}`;
@@ -178,7 +181,11 @@ export function ToolForm({
                       onValueChange(question.id, nextValue)
                     }
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger
+                      className="w-full"
+                      aria-labelledby={questionId}
+                      aria-describedby={describedBy}
+                    >
                       <SelectValue placeholder={question.placeholder} />
                     </SelectTrigger>
                     <SelectContent>
@@ -192,7 +199,12 @@ export function ToolForm({
                 ) : null}
 
                 {question.type === 'checkbox' && question.options ? (
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div
+                    className="grid gap-3 sm:grid-cols-2"
+                    role="group"
+                    aria-labelledby={questionId}
+                    aria-describedby={describedBy}
+                  >
                     {question.options.map((option) => {
                       const selectedValues = getStringArrayValue(value);
                       const checked = selectedValues.includes(option.value);
@@ -246,6 +258,7 @@ export function ToolForm({
                         onValueChange(question.id, nextChecked === true)
                       }
                       className="mt-0.5"
+                      aria-describedby={describedBy}
                     />
                     <Label
                       htmlFor={`${questionId}-single`}
@@ -266,6 +279,8 @@ export function ToolForm({
                     max={question.max}
                     step={question.step}
                     placeholder={question.placeholder}
+                    aria-labelledby={questionId}
+                    aria-describedby={describedBy}
                     onChange={(event) =>
                       onValueChange(question.id, event.target.value)
                     }
@@ -277,6 +292,8 @@ export function ToolForm({
                     id={`${questionId}-textarea`}
                     value={getStringValue(value)}
                     placeholder={question.placeholder}
+                    aria-labelledby={questionId}
+                    aria-describedby={describedBy}
                     onChange={(event) =>
                       onValueChange(question.id, event.target.value)
                     }

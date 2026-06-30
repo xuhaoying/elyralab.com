@@ -1,8 +1,8 @@
 'use client';
 
 import { FormEvent, useRef, useState } from 'react';
-
 import { trackToolEvent } from '@/lib/analytics';
+
 import {
   ChecklistSection,
   PrintablePlan,
@@ -209,6 +209,11 @@ export function DogFireworksAnxietyChecklist({
         label={plan ? `Risk level: ${plan.riskLevel}` : undefined}
         tone={plan ? riskTone[plan.riskLevel] : 'neutral'}
         summary={plan?.summary}
+        notice={
+          plan
+            ? 'If your pet may injure themselves, escape, cannot calm down, or has medical needs, contact a veterinarian. Do not use sedatives or calming products without veterinary guidance.'
+            : undefined
+        }
         recommendedNextSteps={plan?.recommendedNextSteps}
       >
         {plan ? <PlanInputs plan={plan} /> : null}
@@ -241,7 +246,7 @@ export function DogFireworksAnxietyChecklist({
               sections={plan.checklistSections}
             />
 
-            <section className="rounded-md border p-4" data-print-page>
+            <section className="rounded-md border p-4" data-print-block>
               <h3 className="font-semibold">Safety notes and limitations</h3>
               <ul className="text-muted-foreground mt-3 list-disc space-y-1 pl-5 text-sm leading-6">
                 {plan.safetyNotes.map((note) => (
@@ -250,9 +255,12 @@ export function DogFireworksAnxietyChecklist({
               </ul>
             </section>
 
-            <details className="text-muted-foreground text-xs" data-print-hidden="true">
+            <details
+              className="text-muted-foreground text-xs"
+              data-print-hidden="true"
+            >
               <summary className="cursor-pointer">Plain-text version</summary>
-              <pre className="mt-3 whitespace-pre-wrap rounded-md border p-3">
+              <pre className="mt-3 rounded-md border p-3 whitespace-pre-wrap">
                 {petNoisePlanText(plan)}
               </pre>
             </details>

@@ -141,8 +141,9 @@ pre {
     display: none !important;
   }
 
-  body[data-tool-print-mode='plan'] [data-print-page] {
+  body[data-tool-print-mode='plan'] [data-print-block] {
     break-inside: avoid;
+    page-break-inside: avoid;
   }
 }
 

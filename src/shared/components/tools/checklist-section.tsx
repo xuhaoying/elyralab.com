@@ -18,7 +18,7 @@ export function ChecklistSection({
   }
 
   return (
-    <section className="space-y-4" data-print-page>
+    <section className="space-y-4">
       {title || description ? (
         <div className="space-y-1">
           {title ? <h3 className="text-lg font-semibold">{title}</h3> : null}
@@ -32,7 +32,7 @@ export function ChecklistSection({
 
       <div className="grid gap-4">
         {sections.map((section) => (
-          <section key={section.title} className="rounded-md border p-4">
+          <section key={section.title} className="rounded-md border p-4" data-print-block>
             <div className="space-y-1">
               <h4 className="font-semibold">{section.title}</h4>
               {section.description ? (

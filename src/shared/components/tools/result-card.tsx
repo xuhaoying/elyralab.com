@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { AlertTriangle } from 'lucide-react';
 
 import { Badge } from '@/shared/components/ui/badge';
 import {
@@ -17,7 +18,7 @@ const toneClasses: Record<ResultTone, string> = {
   medium:
     'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300',
   high: 'border-destructive/30 bg-destructive/10 text-destructive',
-  neutral: 'border-primary/30 bg-primary/10 text-primary',
+  neutral: 'border-border bg-muted text-foreground',
 };
 
 export function ResultCard({
@@ -26,6 +27,8 @@ export function ResultCard({
   label,
   tone = 'neutral',
   summary,
+  notice,
+  noticeTitle = 'Safety boundary',
   recommendedNextSteps,
   emptyState = 'Complete the form to generate a result.',
   children,
@@ -35,6 +38,8 @@ export function ResultCard({
   label?: string;
   tone?: ResultTone;
   summary?: string;
+  notice?: string;
+  noticeTitle?: string;
   recommendedNextSteps?: string[];
   emptyState?: string;
   children?: ReactNode;
@@ -65,6 +70,16 @@ export function ResultCard({
                 <p className="text-muted-foreground mt-2 text-sm leading-6">
                   {summary}
                 </p>
+              </div>
+            ) : null}
+
+            {notice ? (
+              <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-4 text-amber-950 dark:text-amber-100">
+                <h3 className="flex items-center gap-2 text-sm font-semibold">
+                  <AlertTriangle className="size-4 shrink-0" />
+                  {noticeTitle}
+                </h3>
+                <p className="mt-2 text-sm leading-6">{notice}</p>
               </div>
             ) : null}
 

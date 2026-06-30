@@ -1,8 +1,8 @@
 'use client';
 
 import { FormEvent, useRef, useState } from 'react';
-
 import { trackToolEvent } from '@/lib/analytics';
+
 import {
   ChecklistSection,
   PrintablePlan,
@@ -194,7 +194,7 @@ function PlanInputs({ plan }: { plan: HeatwaveMealPlan }) {
 
 function DailyPlan({ plan }: { plan: HeatwaveMealPlan }) {
   return (
-    <section className="space-y-4" data-print-page>
+    <section className="space-y-4">
       <div className="space-y-1">
         <h3 className="text-lg font-semibold">Meal plan by day</h3>
         <p className="text-muted-foreground text-sm leading-6">
@@ -203,7 +203,11 @@ function DailyPlan({ plan }: { plan: HeatwaveMealPlan }) {
       </div>
       <div className="grid gap-4">
         {plan.days.map((day) => (
-          <section key={day.day} className="rounded-md border p-4">
+          <section
+            key={day.day}
+            className="rounded-md border p-4"
+            data-print-block
+          >
             <h4 className="font-semibold">Day {day.day}</h4>
             <dl className="mt-3 grid gap-3 text-sm">
               <div>
@@ -232,11 +236,7 @@ function DailyPlan({ plan }: { plan: HeatwaveMealPlan }) {
   );
 }
 
-export function NoCookHeatwaveMealPlanner({
-  toolSlug,
-}: {
-  toolSlug: string;
-}) {
+export function NoCookHeatwaveMealPlanner({ toolSlug }: { toolSlug: string }) {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [plan, setPlan] = useState<HeatwaveMealPlan | null>(null);
   const startedRef = useRef(false);
@@ -298,6 +298,11 @@ export function NoCookHeatwaveMealPlanner({
         description="Use this summary to shop, prep, and print a heat-safe checklist."
         label={plan?.planType}
         summary={plan?.summary}
+        notice={
+          plan
+            ? 'Keep perishable food cold, discard food held too long in unsafe heat, and use clinician guidance for medical or restricted diets.'
+            : undefined
+        }
         recommendedNextSteps={plan?.recommendedNextSteps}
       >
         {plan ? <PlanInputs plan={plan} /> : null}
@@ -351,9 +356,12 @@ export function NoCookHeatwaveMealPlanner({
               ]}
             />
 
-            <details className="text-muted-foreground text-xs" data-print-hidden="true">
+            <details
+              className="text-muted-foreground text-xs"
+              data-print-hidden="true"
+            >
               <summary className="cursor-pointer">Plain-text version</summary>
-              <pre className="mt-3 whitespace-pre-wrap rounded-md border p-3">
+              <pre className="mt-3 rounded-md border p-3 whitespace-pre-wrap">
                 {heatwavePlanText(plan)}
               </pre>
             </details>
