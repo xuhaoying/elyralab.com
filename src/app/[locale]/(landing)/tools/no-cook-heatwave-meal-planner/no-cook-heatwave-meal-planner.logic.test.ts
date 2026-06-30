@@ -71,6 +71,46 @@ test('pantry-only toaster plans avoid cold toast toppings', () => {
   assert.doesNotMatch(text, /tomato, cucumber, and cheese/i);
 });
 
+test('vegetarian low-budget plans do not mention fish in budget tips', () => {
+  const lowBudgetPlan = heatwavePlanText(
+    buildHeatwaveMealPlan({
+      ...emptyForm,
+      diet: 'vegetarian',
+      budget: 'low',
+      storage: 'fridge',
+    })
+  );
+  const saveMoneyPlan = heatwavePlanText(
+    buildHeatwaveMealPlan({
+      ...emptyForm,
+      diet: 'vegetarian',
+      goal: 'save-money',
+      storage: 'pantry-only',
+    })
+  );
+
+  assert.doesNotMatch(lowBudgetPlan, /fish/i);
+  assert.doesNotMatch(saveMoneyPlan, /fish/i);
+  assert.match(lowBudgetPlan, /hummus/);
+  assert.match(saveMoneyPlan, /nut butter/);
+});
+
+test('emergency heatwave prep uses shelf-stable meals even with fridge storage', () => {
+  const plan = buildHeatwaveMealPlan({
+    ...emptyForm,
+    goal: 'emergency-prep',
+    storage: 'fridge',
+  });
+  const text = heatwavePlanText(plan);
+
+  assert.match(plan.planType, /Shelf-stable/);
+  assert.match(text, /Shelf-stable proteins/);
+  assert.doesNotMatch(
+    text,
+    /Greek yogurt|rotisserie chicken|cheese|bagged salad|cucumber/i
+  );
+});
+
 test('high-protein plans include ready-to-eat protein options', () => {
   const plan = buildHeatwaveMealPlan({
     ...emptyForm,

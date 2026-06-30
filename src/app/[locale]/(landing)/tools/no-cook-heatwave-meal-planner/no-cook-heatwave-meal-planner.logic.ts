@@ -152,20 +152,24 @@ function isPantryFocused(form: FormState) {
   return form.storage === 'pantry-only' || form.storage === 'limited-storage';
 }
 
+function prefersShelfStablePlan(form: FormState) {
+  return isPantryFocused(form) || form.goal === 'emergency-prep';
+}
+
 function hasTool(form: FormState, tool: KitchenTool) {
   return form.tools.includes(tool);
 }
 
 function getPlanType(form: FormState) {
-  if (isPantryFocused(form) && form.diet === 'kid-friendly') {
+  if (prefersShelfStablePlan(form) && form.diet === 'kid-friendly') {
     return 'Shelf-stable kid-friendly heatwave plan';
   }
 
-  if (isPantryFocused(form) && form.diet === 'elderly-friendly') {
+  if (prefersShelfStablePlan(form) && form.diet === 'elderly-friendly') {
     return 'Shelf-stable easy-to-chew heatwave plan';
   }
 
-  if (isPantryFocused(form) || form.goal === 'emergency-prep') {
+  if (prefersShelfStablePlan(form)) {
     return 'Shelf-stable heatwave backup plan';
   }
 
@@ -198,7 +202,7 @@ function getSummary(form: FormState, planType: string) {
 }
 
 function getBreakfastIdeas(form: FormState) {
-  const pantry = isPantryFocused(form);
+  const pantry = prefersShelfStablePlan(form);
   const ideas = pantry
     ? [
         'Peanut butter banana toast or crackers',
@@ -245,7 +249,7 @@ function getBreakfastIdeas(form: FormState) {
 }
 
 function getLunchIdeas(form: FormState) {
-  const pantry = isPantryFocused(form);
+  const pantry = prefersShelfStablePlan(form);
   const ideas = pantry
     ? [
         'Bean and corn salad with crackers',
@@ -300,7 +304,7 @@ function getLunchIdeas(form: FormState) {
 }
 
 function getDinnerIdeas(form: FormState) {
-  const pantry = isPantryFocused(form);
+  const pantry = prefersShelfStablePlan(form);
   const ideas = pantry
     ? [
         'Canned bean, corn, and salsa tostada plate',
@@ -363,7 +367,7 @@ function getDinnerIdeas(form: FormState) {
 }
 
 function getSnackIdeas(form: FormState) {
-  const pantry = isPantryFocused(form);
+  const pantry = prefersShelfStablePlan(form);
   const ideas = pantry
     ? [
         'Bananas, apples, oranges, or fruit cups',
@@ -421,7 +425,7 @@ function buildDailyPlans(form: FormState): DailyMealPlan[] {
 }
 
 function getGrocerySections(form: FormState): PlanSection[] {
-  const pantry = isPantryFocused(form);
+  const pantry = prefersShelfStablePlan(form);
   const vegetarian = form.diet === 'vegetarian';
   const lowBudget = form.budget === 'low' || form.goal === 'save-money';
   const hasColdStorage = !pantry;
@@ -585,7 +589,7 @@ function getStorageReminders(form: FormState) {
     'Keep water visible and easy to reach during the hottest hours.',
   ];
 
-  if (form.storage === 'pantry-only') {
+  if (form.storage === 'pantry-only' || form.goal === 'emergency-prep') {
     reminders.unshift(
       'Choose mostly shelf-stable foods and buy small amounts of fresh produce that can sit safely at room temperature.'
     );
@@ -620,14 +624,19 @@ function getBudgetTips(form: FormState) {
   ];
 
   if (form.budget === 'low' || form.goal === 'save-money') {
+    const proteinPhrase =
+      form.diet === 'vegetarian'
+        ? 'peanut butter, beans, hummus, nut butter'
+        : 'peanut butter, beans, canned fish';
+
     tips.unshift(
-      isPantryFocused(form)
-        ? 'Prioritize peanut butter, beans, bread, canned fish if it fits your diet, bananas, oats, crackers, and shelf-stable milk.'
-        : 'Prioritize peanut butter, beans, bread, canned fish if it fits your diet, bananas, oats, yogurt, and bagged salad only when it will be eaten quickly.'
+      prefersShelfStablePlan(form)
+        ? `Prioritize ${proteinPhrase}, bread, bananas, oats, crackers, and shelf-stable milk.`
+        : `Prioritize ${proteinPhrase}, bread, bananas, oats, yogurt, and bagged salad only when it will be eaten quickly.`
     );
   }
 
-  if (isPantryFocused(form)) {
+  if (prefersShelfStablePlan(form)) {
     tips.push(
       'Buy fewer perishable items at a time; shelf-stable options reduce waste when cooling is limited.'
     );
@@ -657,7 +666,7 @@ function getNextSteps(form: FormState) {
     'Print the grocery list before a heatwave or high-temperature week.',
   ];
 
-  if (isPantryFocused(form)) {
+  if (prefersShelfStablePlan(form)) {
     steps.unshift(
       'Stock shelf-stable proteins, fruit, grains, and water first.'
     );
