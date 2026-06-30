@@ -35,8 +35,19 @@ export function PrintablePlan({
       return;
     }
 
+    const cleanupPrintMode = () => {
+      delete document.body.dataset.toolPrintMode;
+      window.removeEventListener('afterprint', cleanupPrintMode);
+    };
+
     trackToolEvent('print_result', { tool_slug: toolSlug });
-    window.print();
+    document.body.dataset.toolPrintMode = 'plan';
+    window.addEventListener('afterprint', cleanupPrintMode);
+
+    window.requestAnimationFrame(() => {
+      window.print();
+      window.setTimeout(cleanupPrintMode, 1000);
+    });
   }
 
   return (

@@ -28,6 +28,14 @@ test('getRiskLevel treats hiding or being alone as medium risk', () => {
     }),
     'Medium'
   );
+
+  assert.equal(
+    getRiskLevel({
+      ...emptyForm,
+      aloneStatus: 'not-sure',
+    }),
+    'Medium'
+  );
 });
 
 test('getRiskLevel escalates escape, self-injury, senior stress, and alone marked stress', () => {
@@ -61,6 +69,15 @@ test('getRiskLevel escalates escape, self-injury, senior stress, and alone marke
       ...emptyForm,
       reaction: 'shakes',
       aloneStatus: 'yes',
+    }),
+    'High'
+  );
+
+  assert.equal(
+    getRiskLevel({
+      ...emptyForm,
+      reaction: 'shakes',
+      aloneStatus: 'not-sure',
     }),
     'High'
   );

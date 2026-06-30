@@ -105,6 +105,11 @@ function getPossessivePetLabel(petType: PetType) {
   return petType === 'other' ? 'your pet' : `your ${petTypeLabels[petType]}`;
 }
 
+function getSentencePetLabel(petType: PetType) {
+  const label = getPossessivePetLabel(petType);
+  return `${label.charAt(0).toUpperCase()}${label.slice(1)}`;
+}
+
 export function getRiskLevel(form: FormState): RiskLevel {
   const severity = reactionSeverity[form.reaction];
   const hasEscapeOrInjuryHistory = severity >= 3;
@@ -112,16 +117,19 @@ export function getRiskLevel(form: FormState): RiskLevel {
   const hasAnyStress = severity >= 1;
   const seniorWithMarkedStress = form.petAge === 'senior' && hasMarkedStress;
   const aloneWithMarkedStress = form.aloneStatus === 'yes' && hasMarkedStress;
+  const uncertainSupervision = form.aloneStatus === 'not-sure';
+  const uncertainWithMarkedStress = uncertainSupervision && hasMarkedStress;
 
   if (
     hasEscapeOrInjuryHistory ||
     seniorWithMarkedStress ||
-    aloneWithMarkedStress
+    aloneWithMarkedStress ||
+    uncertainWithMarkedStress
   ) {
     return 'High';
   }
 
-  if (hasAnyStress || form.aloneStatus === 'yes') {
+  if (hasAnyStress || form.aloneStatus === 'yes' || uncertainSupervision) {
     return 'Medium';
   }
 
@@ -129,7 +137,7 @@ export function getRiskLevel(form: FormState): RiskLevel {
 }
 
 function getSummary(form: FormState, riskLevel: RiskLevel) {
-  const petLabel = getPossessivePetLabel(form.petType);
+  const petLabel = getSentencePetLabel(form.petType);
   const eventLabel = eventLabels[form.eventType].toLowerCase();
 
   if (riskLevel === 'High') {

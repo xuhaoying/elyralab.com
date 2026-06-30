@@ -33,6 +33,44 @@ test('pantry-only plans prioritize shelf-stable groceries and storage reminders'
   assert.doesNotMatch(text, /bagged salad/);
 });
 
+test('pantry-only kid and elderly plans do not emit cold-storage meals', () => {
+  const coldFoodPattern =
+    /yogurt|cheese|turkey|cucumber|melon|bagged salad|rotisserie chicken/i;
+
+  const kidPlan = heatwavePlanText(
+    buildHeatwaveMealPlan({
+      ...emptyForm,
+      storage: 'pantry-only',
+      diet: 'kid-friendly',
+    })
+  );
+  const elderlyPlan = heatwavePlanText(
+    buildHeatwaveMealPlan({
+      ...emptyForm,
+      storage: 'pantry-only',
+      diet: 'elderly-friendly',
+    })
+  );
+
+  assert.doesNotMatch(kidPlan, coldFoodPattern);
+  assert.doesNotMatch(elderlyPlan, coldFoodPattern);
+  assert.match(kidPlan, /Shelf-stable/i);
+  assert.match(elderlyPlan, /Shelf-stable/i);
+});
+
+test('pantry-only toaster plans avoid cold toast toppings', () => {
+  const plan = buildHeatwaveMealPlan({
+    ...emptyForm,
+    storage: 'pantry-only',
+    tools: ['toaster'],
+    days: '7',
+  });
+  const text = heatwavePlanText(plan);
+
+  assert.match(text, /Toast with peanut butter, banana, and cinnamon/);
+  assert.doesNotMatch(text, /tomato, cucumber, and cheese/i);
+});
+
 test('high-protein plans include ready-to-eat protein options', () => {
   const plan = buildHeatwaveMealPlan({
     ...emptyForm,

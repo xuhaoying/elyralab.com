@@ -113,25 +113,21 @@ pre {
 }
 
 @media print {
-  @page {
-    margin: 0.5in;
-  }
-
-  body {
+  body[data-tool-print-mode='plan'] {
     background: white;
     color: black;
   }
 
-  body * {
+  body[data-tool-print-mode='plan'] * {
     visibility: hidden;
   }
 
-  [data-print-root],
-  [data-print-root] * {
+  body[data-tool-print-mode='plan'] [data-print-root],
+  body[data-tool-print-mode='plan'] [data-print-root] * {
     visibility: visible;
   }
 
-  [data-print-root] {
+  body[data-tool-print-mode='plan'] [data-print-root] {
     position: absolute;
     top: 0;
     left: 0;
@@ -140,12 +136,12 @@ pre {
     box-shadow: none !important;
   }
 
-  [data-print-hidden='true'],
-  [data-print-hidden='true'] * {
+  body[data-tool-print-mode='plan'] [data-print-hidden='true'],
+  body[data-tool-print-mode='plan'] [data-print-hidden='true'] * {
     display: none !important;
   }
 
-  [data-print-page] {
+  body[data-tool-print-mode='plan'] [data-print-page] {
     break-inside: avoid;
   }
 }

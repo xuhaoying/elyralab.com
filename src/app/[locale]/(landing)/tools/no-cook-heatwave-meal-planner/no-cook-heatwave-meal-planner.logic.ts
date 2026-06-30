@@ -13,7 +13,12 @@ export type DietaryPreference =
   | 'kid-friendly'
   | 'elderly-friendly'
   | 'low-prep';
-export type KitchenTool = 'none' | 'microwave' | 'kettle' | 'blender' | 'toaster';
+export type KitchenTool =
+  | 'none'
+  | 'microwave'
+  | 'kettle'
+  | 'blender'
+  | 'toaster';
 export type MainGoal =
   | 'stay-cool'
   | 'save-money'
@@ -152,6 +157,18 @@ function hasTool(form: FormState, tool: KitchenTool) {
 }
 
 function getPlanType(form: FormState) {
+  if (isPantryFocused(form) && form.diet === 'kid-friendly') {
+    return 'Shelf-stable kid-friendly heatwave plan';
+  }
+
+  if (isPantryFocused(form) && form.diet === 'elderly-friendly') {
+    return 'Shelf-stable easy-to-chew heatwave plan';
+  }
+
+  if (isPantryFocused(form) || form.goal === 'emergency-prep') {
+    return 'Shelf-stable heatwave backup plan';
+  }
+
   if (form.diet === 'elderly-friendly') {
     return 'Hydrating easy-to-chew no-cook plan';
   }
@@ -162,10 +179,6 @@ function getPlanType(form: FormState) {
 
   if (form.diet === 'high-protein') {
     return 'High-protein no-cook heatwave plan';
-  }
-
-  if (isPantryFocused(form) || form.goal === 'emergency-prep') {
-    return 'Shelf-stable heatwave backup plan';
   }
 
   if (form.budget === 'low' || form.goal === 'save-money') {
@@ -179,9 +192,9 @@ function getSummary(form: FormState, planType: string) {
   const storagePhrase = storageLabels[form.storage];
   const toolsPhrase = formatTools(form.tools);
 
-  return `${planType} for ${peopleLabels[form.people].toLowerCase()} across ${dayLabels[
-    form.days
-  ]}. It emphasizes cool, simple meals that fit ${storagePhrase} storage and ${toolsPhrase} kitchen tools.`;
+  return `${planType} for ${peopleLabels[form.people].toLowerCase()} across ${
+    dayLabels[form.days]
+  }. It emphasizes cool, simple meals that fit ${storagePhrase} storage and ${toolsPhrase} kitchen tools.`;
 }
 
 function getBreakfastIdeas(form: FormState) {
@@ -201,11 +214,19 @@ function getBreakfastIdeas(form: FormState) {
       ];
 
   if (form.diet === 'kid-friendly') {
-    ideas.unshift('Yogurt, banana, and cereal snack plate');
+    ideas.unshift(
+      pantry
+        ? 'Shelf-stable cereal with banana and shelf-stable milk'
+        : 'Yogurt, banana, and cereal snack plate'
+    );
   }
 
   if (form.diet === 'elderly-friendly') {
-    ideas.unshift('Soft yogurt bowl with canned peaches and oats');
+    ideas.unshift(
+      pantry
+        ? 'Applesauce cup with oats and nut butter'
+        : 'Soft yogurt bowl with canned peaches and oats'
+    );
   }
 
   if (form.diet === 'high-protein') {
@@ -243,16 +264,28 @@ function getLunchIdeas(form: FormState) {
     return unique(
       ideas
         .filter((idea) => !/tuna|salmon|chicken/i.test(idea))
-        .concat('Chickpea and cucumber pita with hummus')
+        .concat(
+          pantry
+            ? 'Chickpea and shelf-stable hummus pita with fruit cup'
+            : 'Chickpea and cucumber pita with hummus'
+        )
     );
   }
 
   if (form.diet === 'kid-friendly') {
-    ideas.unshift('Turkey, cheese, or hummus pinwheel wraps with fruit');
+    ideas.unshift(
+      pantry
+        ? 'Peanut butter banana wrap with applesauce cup'
+        : 'Turkey, cheese, or hummus pinwheel wraps with fruit'
+    );
   }
 
   if (form.diet === 'elderly-friendly') {
-    ideas.unshift('Soft bean spread on bread with cucumber and melon');
+    ideas.unshift(
+      pantry
+        ? 'Soft bean spread on bread with canned fruit'
+        : 'Soft bean spread on bread with cucumber and melon'
+    );
   }
 
   if (form.diet === 'high-protein') {
@@ -287,7 +320,11 @@ function getDinnerIdeas(form: FormState) {
   }
 
   if (hasTool(form, 'toaster')) {
-    ideas.push('Toast with hummus, tomato, cucumber, and cheese');
+    ideas.push(
+      pantry
+        ? 'Toast with peanut butter, banana, and cinnamon'
+        : 'Toast with hummus, tomato, cucumber, and cheese'
+    );
   }
 
   if (form.diet === 'vegetarian') {
@@ -299,11 +336,19 @@ function getDinnerIdeas(form: FormState) {
   }
 
   if (form.diet === 'kid-friendly') {
-    ideas.unshift('Sandwich, fruit, yogurt, and crunchy veggie snack plate');
+    ideas.unshift(
+      pantry
+        ? 'Peanut butter sandwich, fruit cup, and crackers'
+        : 'Sandwich, fruit, yogurt, and crunchy veggie snack plate'
+    );
   }
 
   if (form.diet === 'elderly-friendly') {
-    ideas.unshift('Soft hummus, avocado, pita, and melon plate');
+    ideas.unshift(
+      pantry
+        ? 'Soft bean spread, pita, applesauce, and canned peaches'
+        : 'Soft hummus, avocado, pita, and melon plate'
+    );
   }
 
   if (form.diet === 'high-protein') {
@@ -334,11 +379,19 @@ function getSnackIdeas(form: FormState) {
       ];
 
   if (form.diet === 'kid-friendly') {
-    ideas.unshift('Snack plate with fruit, yogurt, crackers, and nut butter');
+    ideas.unshift(
+      pantry
+        ? 'Snack plate with fruit cup, crackers, and nut butter'
+        : 'Snack plate with fruit, yogurt, crackers, and nut butter'
+    );
   }
 
   if (form.diet === 'elderly-friendly') {
-    ideas.unshift('Chilled melon, applesauce, yogurt, or soft fruit');
+    ideas.unshift(
+      pantry
+        ? 'Applesauce, canned peaches, or soft shelf-stable fruit cups'
+        : 'Chilled melon, applesauce, yogurt, or soft fruit'
+    );
   }
 
   if (form.diet === 'high-protein') {
@@ -374,11 +427,22 @@ function getGrocerySections(form: FormState): PlanSection[] {
   const hasColdStorage = !pantry;
 
   const proteins = vegetarian
-    ? ['beans', 'hummus', 'nut butter', 'tofu if refrigerated', 'Greek yogurt if refrigerated']
+    ? [
+        'beans',
+        'hummus',
+        'nut butter',
+        'tofu if refrigerated',
+        'Greek yogurt if refrigerated',
+      ]
     : ['beans', 'hummus', 'peanut butter', 'canned tuna or salmon'];
 
   if (!vegetarian && hasColdStorage) {
-    proteins.push('rotisserie chicken', 'pre-cooked eggs', 'Greek yogurt', 'tofu');
+    proteins.push(
+      'rotisserie chicken',
+      'pre-cooked eggs',
+      'Greek yogurt',
+      'tofu'
+    );
   }
 
   if (form.diet === 'high-protein') {
@@ -426,11 +490,19 @@ function getGrocerySections(form: FormState): PlanSection[] {
       ];
 
   if (form.diet === 'kid-friendly') {
-    produce.push('easy fruit cups', 'baby carrots if refrigerated');
+    produce.push('easy fruit cups');
+    if (!pantry) {
+      produce.push('baby carrots if refrigerated');
+    }
   }
 
   if (form.diet === 'elderly-friendly') {
-    produce.push('soft fruit', 'melon', 'applesauce', 'canned peaches');
+    produce.push(
+      pantry ? 'soft shelf-stable fruit cups' : 'soft fruit',
+      ...(pantry ? [] : ['melon']),
+      'applesauce',
+      'canned peaches'
+    );
   }
 
   const coldItems = pantry
@@ -451,7 +523,7 @@ function getGrocerySections(form: FormState): PlanSection[] {
     'crackers',
     'shelf-stable milk',
     'canned fruit',
-  ].filter((item) => vegetarian ? !/fish/i.test(item) : true);
+  ].filter((item) => (vegetarian ? !/fish/i.test(item) : true));
 
   if (lowBudget) {
     proteins.push('peanut butter', 'beans');
@@ -468,9 +540,7 @@ function getGrocerySections(form: FormState): PlanSection[] {
       {
         title: 'Shelf-stable proteins',
         items: unique(
-          proteins.filter(
-            (item) => !/rotisserie|yogurt|tofu|egg/i.test(item)
-          )
+          proteins.filter((item) => !/rotisserie|yogurt|tofu|egg/i.test(item))
         ),
       },
       {
@@ -588,9 +658,13 @@ function getNextSteps(form: FormState) {
   ];
 
   if (isPantryFocused(form)) {
-    steps.unshift('Stock shelf-stable proteins, fruit, grains, and water first.');
+    steps.unshift(
+      'Stock shelf-stable proteins, fruit, grains, and water first.'
+    );
   } else {
-    steps.unshift('Check fridge or cooler space before buying perishable foods.');
+    steps.unshift(
+      'Check fridge or cooler space before buying perishable foods.'
+    );
   }
 
   if (form.diet === 'elderly-friendly') {
@@ -598,7 +672,9 @@ function getNextSteps(form: FormState) {
   }
 
   if (form.diet === 'kid-friendly') {
-    steps.push('Use snack plates and wraps to reduce heat, mess, and arguments.');
+    steps.push(
+      'Use snack plates and wraps to reduce heat, mess, and arguments.'
+    );
   }
 
   return steps;
