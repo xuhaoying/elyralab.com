@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --webpack && node scripts/copy-standalone-assets.mjs",
+    "build": "next build && node scripts/copy-standalone-assets.mjs",
     "build:fast": "NODE_OPTIONS='--max-old-space-size=4096' next build && node scripts/copy-standalone-assets.mjs",
     "start": "node .next/standalone/server.js",
     "test": "node --import tsx --test \"src/**/*.test.ts\"",
